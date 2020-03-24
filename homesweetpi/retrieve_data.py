@@ -11,6 +11,7 @@ from sql_tables import ENGINE, get_pi_ids
 import sqlalchemy
 import json
 import time
+from datetime import datetime, timedelta
 
 LOG = logging.getLogger(f'data_fetch')
 
@@ -41,20 +42,40 @@ def fetch_recent_data(piid, query_time, port=5002):
     Returns a pandas datafraame
     """
     ipaddr = get_ip_addr(piid)
-    strftime = query_time.strftime('%Y%m%d%H%M')
+    strftime = query_time.strftime('%Y%m%d%H%M%S')
     url = f"http://{ipaddr}:{port}/get_recent/{strftime}"
-    LOG.debug("fetching data from {}".format(url))
+    LOG.debug(f"fetching data from {url}")
     response = requests.get(url)
     recent_data = response.json()
-    recent_data = json.loads(recent_data)
-    recent_data = pd.DataFrame(recent_data)
-    recent_data['datetime'] = pd.to_datetime(recent_data['datetime'],
-                                             unit="ms")
-    sensors = get_sensors_on_pi(piid)
-    recent_data = recent_data.merge(sensors, on=['location', 'piname'])\
-                             .drop(["piname", "location", "sensortype",
-                                    "piid"], axis=1)
-    return recent_data
+    LOG.debug(f"recieved json with length {len(recent_data)}")
+    if len(recent_data) > 1:
+        recent_data = json.loads(recent_data)
+        recent_data = pd.DataFrame(recent_data)
+        LOG.debug(f"shape of fetched data is {recent_data.shape}")
+        recent_data['datetime'] = pd.to_datetime(recent_data['datetime'],
+                                                 unit="ms")
+        sensors = get_sensors_on_pi(piid)
+        LOG.debug(f"sensors on pi {piid} are {sensors}")
+        recent_data = recent_data.merge(sensors, on=['location', 'piname'])\
+                                 .drop(["piname", "location", "sensortype",
+                                        "piid"], axis=1)
+        LOG.debug(f"shape of fetched data after merge is {recent_data.shape}")
+
+        recent_data = recent_data.drop_duplicates(subset=['datetime',
+                                                          'sensorid'])
+        LOG.debug(f"shape of fetched data after drop duplicates {recent_data.shape}")
+        return recent_data
+    else:
+        LOG.debug(f"contents of json recieved: {recent_data}")
+
+
+def round_up_seconds(datetime_):
+    """
+    Round up at datetime instance to the next second and return
+    """
+    dt = datetime_
+    rounded = dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second
+    return datetime(*rounded) + timedelta(seconds=1)
 
 
 if __name__ == "__main__":
@@ -62,25 +83,26 @@ if __name__ == "__main__":
                           log_path="")
     LOG.debug("fetching pi ids")
     ids = get_pi_ids()
-    LOG.debug("pi ids {}".format(ids))
+    LOG.debug(f"pi ids {ids}")
     freq = 300
-    LOG.debug("fetch frequency set to {} seconds".format(freq))
+    LOG.debug(f"fetch frequency set to {freq} seconds")
     while True:
         for piid in ids:
             query_time = get_last_time(piid)
-            msg = "fetching data for pi {} since time {}".format(piid,
-                                                                 query_time)
+            msg = f"most recent record in db for pi {piid} at {query_time}"
+            LOG.debug(msg)
+            query_time = round_up_seconds(query_time)
+            msg = f"fetching data for pi {piid} since time {query_time}"
             LOG.debug(msg)
             recent_data = fetch_recent_data(piid, query_time)
-            recent_data = recent_data.drop_duplicates(subset=['datetime',
-                                                              'sensorid'])
-            LOG.debug("saving fetched data to db")
-            try:
-                recent_data.to_sql("measurements", ENGINE, index=False,
-                                   if_exists="append")
-            except sqlalchemy.exc.IntegrityError as e:
-                "Error on saving data for {} from {}: {}".format(piid,
-                                                                 query_time,
-                                                                 e)
-                LOG.warning(msg)
+            if recent_data is None:
+                LOG.debug("No data to pass to sql")
+            else:
+                LOG.debug("saving fetched data to db")
+                try:
+                    recent_data.to_sql("measurements", ENGINE, index=False,
+                                       if_exists="append")
+                except sqlalchemy.exc.IntegrityError as e:
+                    msg = f"Error saving  pi {piid} from {query_time}: {e}"
+                    LOG.warning(msg)
         time.sleep(freq)
