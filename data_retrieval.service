@@ -1,0 +1,11 @@
+[Unit]
+Description=Retrieve data from pis and add to postgres db
+After=multi-user.target
+
+[Service]
+WorkingDirectory=/home/ubuntu/
+User=ubuntu
+ExecStart=/usr/bin/python3 /home/ubuntu/homesweetpi/homesweetpi/retrieve_data.py
+
+[Install]
+WantedBy=multi-user.target
