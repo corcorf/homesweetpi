@@ -8,11 +8,12 @@ from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+from config import HSP_PASSWORD as PASSWORD
 
 HOST = 'localhost'
 PORT = '5432'
 USERNAME = 'homesweetpi'
-PASSWORD = os.getenv('HSP_PASSWORD')
+# PASSWORD = os.getenv('HSP_PASSWORD')
 DB = 'homesweetpi'
 conn_string = f'postgres://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}'
 Base = declarative_base()
