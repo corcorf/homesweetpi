@@ -18,6 +18,11 @@ from homesweetpi.data_preparation import rewrite_chart, recent_readings_as_html
 app = Flask("HOMESWEETPI")
 api = Api(app)
 
+app.config.update(
+    DEBUG=False,
+    SERVER_NAME="0.0.0.0:5002"
+)
+
 # Session = sessionmaker(bind=ENGINE)
 logging.basicConfig(filename='homesweetpi_api.log', level=logging.DEBUG)
 
