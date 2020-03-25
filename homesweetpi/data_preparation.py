@@ -2,24 +2,27 @@ import pandas as pd
 import altair as alt
 import logging
 from sqlalchemy import distinct
-from homesweetpi.sql_tables import Measurement, Sensor, RaspberryPi, Base
-from homesweetpi.sql_tables import get_last_time, get_ip_addr,\
-                                   get_sensors_on_pi, one_or_more_results
+from homesweetpi.sql_tables import Measurement, Sensor, RaspberryPi, Base,\
+                                   get_sensors_on_pi, one_or_more_results,\
+                                   get_last_time, get_ip_addr,\
+                                   get_last_n_days, resample_measurements,\
+                                   get_last_measurement_for_sensor,\
+                                   get_all_sensors, get_sensors_and_pis
 from datetime import datetime, timedelta
 import json
 
 
-def create_selection():
+def create_selection(datetime_col="Time"):
     """
     Component of Altair plot creation.
     Create a selection object for an Altair plot that chooses the nearest
     point & selects based on x-value
     """
     return alt.selection(type='single', on='mouseover',
-                              fields=['datetime'], nearest=True)
+                              fields=[datetime_col], nearest=True)
 
 
-def create_lines(source, datetime_col="datetime", logger_col="sensorid"):
+def create_lines(source, datetime_col="Time", logger_col="Location"):
     """
     Component of Altair plot creation.
     create lines object for an Altair plot
@@ -87,8 +90,8 @@ def create_rules(source, nearest, datetime_col="datetime"):
 
 
 def create_chart(lines, selectors, points, rules, text,
-                 row_repeat=['temp', 'humidity',
-                             'pressure', 'gasvoc'],
+                 row_repeat=['Temperature', 'Relative Humidity',
+                             'Pressure', 'Air Quality'],
                  width=600, height=200):
     """
     Component of Altair plot creation.
@@ -101,7 +104,7 @@ def create_chart(lines, selectors, points, rules, text,
     return chart
 
 
-def create_altair_plot(source, datetime_col='datetime', logger_col='sensorid'):
+def create_altair_plot(source, datetime_col='Time', logger_col='Location'):
     """
     Return an interactive altair chart object from the source data
     """
@@ -112,6 +115,63 @@ def create_altair_plot(source, datetime_col='datetime', logger_col='sensorid'):
     text = create_text(lines, nearest)
     rules = create_rules(source, nearest, datetime_col)
     chart = create_chart(lines, selectors, points, rules, text,
-                         ['temp', 'humidity', 'pressure', 'gasvoc'],
+                         ['Temperature', 'Relative Humidity',
+                          'Pressure', 'Air Quality'],
                          600, 200)
     return chart
+
+
+def rewrite_chart(n_days=5, resample_freq='30T',
+                  fn="static/altair_chart_recent_data.json"):
+    """
+    create an altair chart with data from the last n days and save as json
+    """
+    logs = get_last_n_days(n_days)
+    source = resample_measurements(logs, resample_freq).round(1)
+    lookup = get_sensors_and_pis().set_index("sensorid")['location']
+    source['sensorid'] = source['sensorid'].apply(lookup.get)
+    source = source.rename(columns={
+        "datetime": "Time",
+        "temp": "Temperature",
+        "humidity": "Relative Humidity",
+        "pressure": "Pressure",
+        "gasvoc": "Air Quality",
+        "sensorid": "Location"
+    })
+
+    chart = create_altair_plot(source)
+    chart.save(fn)
+
+
+def get_most_recent_readings():
+    """
+    Return a json containing the most recent readings for all sensors
+    """
+    recent_readings = {}
+    for sensor in get_all_sensors():
+        measurement = get_last_measurement_for_sensor(sensor)
+        measurement.pop("datetime")
+        recent_readings[sensor] = measurement
+    return json.dumps(recent_readings)
+
+
+def recent_readings_as_html():
+    """
+    Convert json of latest sensor results to html for rending
+    """
+    df = pd.read_json(get_most_recent_readings()).T
+    df = df.rename(columns={
+        "strftime": "Time", "sensorid": "Sensor ID",
+        "sensorlocation": "Location",
+        "temp": "Temperature", "humidity": "Humidity", "pressure": "Pressure",
+        "gasvoc": "Air Quality", "piname": "Pi",
+    })
+    df['Time'] = pd.to_datetime(df['Time'])
+    df = df.astype({"Temperature": float, "Humidity": float, "Pressure": float,
+                    "Air Quality": float})
+    df = df.round(1)
+    cols = ["Time", "Location", "Temperature", "Humidity", "Pressure",
+            "Air Quality"]
+    table = df.to_html(columns=cols, index=False, justify='left',
+                       classes="table", table_id="latest_results")
+    return table

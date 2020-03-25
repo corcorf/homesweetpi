@@ -97,8 +97,11 @@ class Measurement(Base):
 
     def get_row(self):
         data = dict(
-            sensorid=self.sensorid,
             datetime=self.datetime,
+            strftime=self.datetime.strftime("%d.%m.%Y %H:%M:%S"),
+            sensorid=self.sensorid,
+            sensorlocation=self.sensor.location,
+            piname=self.sensor.raspberrypi.name,
             temp=self.temp,
             humidity=self.humidity,
             pressure=self.pressure,
@@ -163,10 +166,10 @@ def load_sensor_and_pi_info(pi_file, sensor_file, engine=ENGINE):
 
 def get_all_sensors(session=Session()):
     """
-    Return an array of unique raspberry pi names
+    Return an array of unique sensor names
     """
-    q = session.query(Sensor)
-    result = session.query(distinct(q.c.name)).all()
+    q = session.query(Sensor).subquery()
+    result = session.query(distinct(q.c.id)).all()
     result = np.array(result).reshape(-1).astype(str)
     return result
 
@@ -177,6 +180,16 @@ def get_sensors_on_pi(piid, session=Session()):
     a given pi
     """
     q = session.query(Sensor).join(RaspberryPi).filter(RaspberryPi.id == piid)
+    sensors = q.values("sensors.id", "location", "name")
+    return pd.DataFrame(sensors).rename(columns={"name": "piname",
+                                                 "sensors.id": "sensorid"})
+
+
+def get_sensors_and_pis(session=Session()):
+    """
+    Return dataframe of sensors with their host pis
+    """
+    q = session.query(Sensor).join(RaspberryPi)
     sensors = q.values("sensors.id", "location", "name")
     return pd.DataFrame(sensors).rename(columns={"name": "piname",
                                                  "sensors.id": "sensorid"})
@@ -229,7 +242,7 @@ def get_measurements_since(since_datetime, session=Session(),
     Return as a dataframe
     """
     q = session.query(table)\
-               .filter(getattr(table, datetime_col) > since_datetime)
+               .filter(getattr(table, datetime_col) >= since_datetime)
     if one_or_more_results(q):
         i = q.values(*output_cols)
         logs = pd.DataFrame(i)
@@ -264,6 +277,21 @@ def resample_measurements(logs, resample_freq='30T', datetime_col="datetime",
     source = source.resample(resample_freq).mean().drop(logger_col, axis=1)
     source = source.reset_index()
     return source
+
+
+def get_last_measurement_for_sensor(sensorid, session=Session()):
+    """
+    Get the time of the most recent reading for a given sensorid pi
+    Returns a dataframe if a measurment is found, else None
+    """
+    q = session.query(Measurement).join(Sensor).join(RaspberryPi)\
+               .filter(Sensor.id == sensorid)\
+               .order_by(Measurement.datetime.desc())
+    try:
+        result = q.first().get_row()
+        return result
+    except NoResultFound:
+        return None
 
 
 if __name__ == "__main__":
