@@ -2,17 +2,18 @@ import os
 import numpy as np
 import pandas as pd
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine, distinct
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
-from config import HSP_PASSWORD as PASSWORD
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+# from config import HSP_PASSWORD as PASSWORD
 
 HOST = 'localhost'
 PORT = '5432'
 USERNAME = 'homesweetpi'
-# PASSWORD = os.getenv('HSP_PASSWORD')
+PASSWORD = os.getenv('HSP_PASSWORD')
 DB = 'homesweetpi'
 conn_string = f'postgres://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}'
 # CONN_STRING = 'sqlite:///{}'.format(DB_PATH)
@@ -208,6 +209,67 @@ def get_ip_addr(piid):
     session = Session()
     q = session.query(RaspberryPi).filter(RaspberryPi.id == piid)
     return q.first().ipaddress
+
+
+def one_or_more_results(query):
+    """
+    Return True if query contains one or more results, otherwise False
+    """
+    try:
+        query.one()
+    except NoResultFound:
+        return False
+    except MultipleResultsFound:
+        pass
+    return True
+
+
+def get_measurements_since(since_datetime, session=Session(),
+                           table=Measurement,
+                           datetime_col="datetime",
+                           output_cols=["sensorid", "datetime",
+                                        "temp", "humidity",
+                                        "pressure", "gasvoc"]):
+    """
+    Retrieve all measurements since since_datetime
+    Return as a dataframe
+    """
+    q = session.query(table)\
+               .filter(getattr(table, datetime_col) > since_datetime)
+    if one_or_more_results(q):
+        i = q.values(*output_cols)
+        logs = pd.DataFrame(i)
+    logs = logs.sort_values(by=datetime_col)
+    return logs
+
+
+def get_last_n_days(ndays_to_display=5, session=Session(),
+                    table=Measurement,
+                    datetime_col="datetime",
+                    output_cols=["sensorid", "datetime",
+                                 "temp", "humidity",
+                                 "pressure", "gasvoc"]):
+    """
+    Query the database for measurements from the last n days
+    returns a dataframe
+    """
+    earliest = datetime.now() - timedelta(days=ndays_to_display)
+    logs = get_measurements_since(earliest, session,
+                                  table, datetime_col, output_cols)
+    return logs
+
+
+def resample_measurements(logs, resample_freq='30T', datetime_col="datetime",
+                          logger_col='sensorid'):
+    """
+    Resample logs at the given frequency
+    return a new dataframe
+    """
+    assert isinstance(logger_col, str)
+    source = logs.set_index(datetime_col).groupby(logger_col)
+    source = source.resample(resample_freq).mean().drop(logger_col, axis=1)
+    source = source.reset_index()
+    return source
 
 
 if __name__ == "__main__":
