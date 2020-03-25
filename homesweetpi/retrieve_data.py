@@ -4,6 +4,7 @@ Module for retrieving data from raspberry pi apis
 
 import os
 import requests
+from requests.exceptions import ConnectionError
 import logging
 import pandas as pd
 from sql_tables import get_ip_addr, get_sensors_on_pi, get_last_time
@@ -39,15 +40,20 @@ def set_up_python_logging(debug=False,
 def fetch_recent_data(piid, query_time, port=5002):
     """
     Get all data since query_time from a raspberry pi identified by piid
-    Returns a pandas datafraame
+    Returns a pandas dataframe
     """
     ipaddr = get_ip_addr(piid)
     strftime = query_time.strftime('%Y%m%d%H%M%S')
     url = f"http://{ipaddr}:{port}/get_recent/{strftime}"
     LOG.debug(f"fetching data from {url}")
-    response = requests.get(url)
-    recent_data = response.json()
-    LOG.debug(f"recieved json with length {len(recent_data)}")
+    try:
+        response = requests.get(url)
+        recent_data = response.json()
+        LOG.debug(f"recieved json with length {len(recent_data)}")
+    except ConnectionError as e:
+        LOG.debug(f"ConnectionError from {ipaddr}: {e}")
+        msg = f'{{"message": "Could not connect to {ipaddr}"}}'
+        recent_data = json.loads(msg)
     if len(recent_data) > 1:
         recent_data = json.loads(recent_data)
         recent_data = pd.DataFrame(recent_data)
@@ -63,10 +69,10 @@ def fetch_recent_data(piid, query_time, port=5002):
 
         recent_data = recent_data.drop_duplicates(subset=['datetime',
                                                           'sensorid'])
-        LOG.debug(f"shape of fetched data after drop duplicates {recent_data.shape}")
+        LOG.debug(f"shape of data after drop duplicates {recent_data.shape}")
         return recent_data
     else:
-        LOG.debug(f"contents of json recieved: {recent_data}")
+        LOG.debug(f"contents of json: {recent_data}")
 
 
 def round_up_seconds(datetime_):
