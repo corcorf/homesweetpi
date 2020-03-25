@@ -15,16 +15,12 @@ from sqlalchemy.orm import sessionmaker
 from homesweetpi.sql_tables import get_all_sensors, get_last_measurement_for_sensor
 from homesweetpi.data_preparation import rewrite_chart, recent_readings_as_html
 
-app = Flask("HOMESWEETPI")
+app = Flask("homesweetpi")
 api = Api(app)
-
-app.config.update(
-    DEBUG=False,
-    SERVER_NAME="0.0.0.0:5002"
-)
 
 # Session = sessionmaker(bind=ENGINE)
 logging.basicConfig(filename='homesweetpi_api.log', level=logging.DEBUG)
+
 
 @app.route('/')
 def main_page():
