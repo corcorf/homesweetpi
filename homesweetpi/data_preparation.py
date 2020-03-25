@@ -122,7 +122,7 @@ def create_altair_plot(source, datetime_col='Time', logger_col='Location'):
 
 
 def rewrite_chart(n_days=5, resample_freq='30T',
-                  fn="static/altair_chart_recent_data.json"):
+                  fn="homesweetpi/static/altair_chart_recent_data.json"):
     """
     create an altair chart with data from the last n days and save as json
     """
