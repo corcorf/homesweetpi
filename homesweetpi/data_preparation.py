@@ -90,8 +90,8 @@ def create_rules(source, nearest, datetime_col="datetime"):
 
 
 def create_chart(lines, selectors, points, rules, text,
-                 row_repeat=['Temperature', 'Relative Humidity',
-                             'Pressure', 'Air Quality'],
+                 row_repeat=["Temperature (°C)", 'Relative Humidity (%)',
+                             'Pressure (hPa)', 'Gas Resistance (Ω)'],
                  width=600, height=200):
     """
     Component of Altair plot creation.
@@ -104,7 +104,27 @@ def create_chart(lines, selectors, points, rules, text,
     return chart
 
 
-def create_altair_plot(source, datetime_col='Time', logger_col='Location'):
+def format_chart(chart):
+    """
+    Customise chart formatting
+    return formatted chart instance
+    """
+    chart = chart.configure_title(fontSize=16,
+                                  color='darkgray',
+                                  # fontWeight="normal",
+                                  anchor="start",
+                                  frame="group")
+    chart = chart.configure_axisLeft(labelFontSize=12,
+                                     titleFontSize=15)
+    chart = chart.configure_axisBottom(labelFontSize=12,
+                                       title=None)
+    chart = chart.configure_legend(labelFontSize=12,
+                                   titleFontSize=12)
+    return chart
+
+
+def create_altair_plot(source, datetime_col='Time', logger_col='Location',
+                       title="HomeSweetPi Data"):
     """
     Return an interactive altair chart object from the source data
     """
@@ -115,10 +135,29 @@ def create_altair_plot(source, datetime_col='Time', logger_col='Location'):
     text = create_text(lines, nearest)
     rules = create_rules(source, nearest, datetime_col)
     chart = create_chart(lines, selectors, points, rules, text,
-                         ['Temperature', 'Relative Humidity',
-                          'Pressure', 'Air Quality'],
-                         600, 200)
+                         ["Temperature (°C)", 'Relative Humidity (%)',
+                          'Pressure (hPa)', 'Gas Resistance (Ω)'],
+                         600, 200).properties(title=title)
+    chart = format_chart(chart)
     return chart
+
+
+def prepare_chart_data(logs, resample_freq='30T'):
+    """
+    Prepare the data for creation of the Altair plot
+    """
+    source = resample_measurements(logs, resample_freq).round(1)
+    lookup = get_sensors_and_pis().set_index("sensorid")['location']
+    source['sensorid'] = source['sensorid'].apply(lookup.get)
+    source = source.rename(columns={
+        "datetime": "Time",
+        "temp": "Temperature (°C)",
+        "humidity": "Relative Humidity (%)",
+        "pressure": "Pressure (hPa)",
+        "gasvoc": "Gas Resistance (Ω)",
+        "sensorid": "Location"
+    })
+    return source
 
 
 def rewrite_chart(n_days=5, resample_freq='30T',
@@ -126,20 +165,10 @@ def rewrite_chart(n_days=5, resample_freq='30T',
     """
     create an altair chart with data from the last n days and save as json
     """
+    title = f"Readings from the last {n_days} days:"
     logs = get_last_n_days(n_days)
-    source = resample_measurements(logs, resample_freq).round(1)
-    lookup = get_sensors_and_pis().set_index("sensorid")['location']
-    source['sensorid'] = source['sensorid'].apply(lookup.get)
-    source = source.rename(columns={
-        "datetime": "Time",
-        "temp": "Temperature",
-        "humidity": "Relative Humidity",
-        "pressure": "Pressure",
-        "gasvoc": "Air Quality",
-        "sensorid": "Location"
-    })
-
-    chart = create_altair_plot(source)
+    source = prepare_chart_data(logs, resample_freq)
+    chart = create_altair_plot(source, title=title)
     chart.save(fn)
 
 
@@ -163,15 +192,15 @@ def recent_readings_as_html():
     df = df.rename(columns={
         "strftime": "Time", "sensorid": "Sensor ID",
         "sensorlocation": "Location",
-        "temp": "Temperature", "humidity": "Humidity", "pressure": "Pressure",
-        "gasvoc": "Air Quality", "piname": "Pi",
+        "temp": "Temperature (°C)", "humidity": "Humidity (%)", "pressure": "Pressure (hPa)",
+        "gasvoc": "Gas Resistance (Ω)", "piname": "Pi",
     })
     df['Time'] = pd.to_datetime(df['Time'])
-    df = df.astype({"Temperature": float, "Humidity": float, "Pressure": float,
-                    "Air Quality": float})
+    df = df.astype({"Temperature (°C)": float, "Humidity (%)": float, "Pressure (hPa)": float,
+                    "Gas Resistance (Ω)": float})
     df = df.round(1)
-    cols = ["Time", "Location", "Temperature", "Humidity", "Pressure",
-            "Air Quality"]
+    cols = ["Time", "Location", "Temperature (°C)", "Humidity (%)", "Pressure (hPa)",
+            "Gas Resistance (Ω)"]
     table = df.to_html(columns=cols, index=False, justify='left',
                        classes="table", table_id="latest_results")
     return table

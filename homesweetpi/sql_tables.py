@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
-HOST = 'localhost'
+HOST = os.getenv('POSTGRES_SERVER_ADDRESS')
 PORT = '5432'
 USERNAME = 'homesweetpi'
 PASSWORD = os.getenv('HSP_PASSWORD')
