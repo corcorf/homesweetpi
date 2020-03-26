@@ -15,6 +15,7 @@ from homesweetpi.data_preparation import rewrite_chart,\
 
 app = Flask("homesweetpi")
 api = Api(app)
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 # Session = sessionmaker(bind=ENGINE)
 logging.basicConfig(filename='homesweetpi_api.log', level=logging.DEBUG)
