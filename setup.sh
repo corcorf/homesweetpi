@@ -13,3 +13,10 @@ then
   echo "creating file 'data_retrieval_service_set_up_complete as flag"
   touch data_retrieval_service_set_up_complete
 fi
+
+if [ ! -e env ]
+then
+  python3 -m venv env
+  source env/bin/activate
+  pip3 install -r requirements.txt
+fi
