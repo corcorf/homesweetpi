@@ -35,7 +35,7 @@ def main_page():
 def charts():
     max_days = 100
     default_days = 7
-    n_days = request.args[f'n_days']
+    n_days = request.args.get('n_days', default=default_days, type=int)
     try:
         n_days = int(n_days)
         n_days = min(n_days, max_days)
