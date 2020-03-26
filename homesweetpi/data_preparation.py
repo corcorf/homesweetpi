@@ -160,16 +160,20 @@ def prepare_chart_data(logs, resample_freq='30T'):
     return source
 
 
-def rewrite_chart(n_days=5, resample_freq='30T',
+def rewrite_chart(n_days=5, resample_freq='30T', save=False,
                   fn="homesweetpi/static/altair_chart_recent_data.json"):
     """
-    create an altair chart with data from the last n days and save as json
+    create an altair chart with data from the last n days
+    if save == True, save as json, else return the chart object
     """
     title = f"Readings from the last {n_days} days:"
     logs = get_last_n_days(n_days)
     source = prepare_chart_data(logs, resample_freq)
     chart = create_altair_plot(source, title=title)
-    chart.save(fn)
+    if save:
+        chart.save(fn)
+    else:
+        return chart
 
 
 def get_most_recent_readings():
@@ -192,15 +196,16 @@ def recent_readings_as_html():
     df = df.rename(columns={
         "strftime": "Time", "sensorid": "Sensor ID",
         "sensorlocation": "Location",
-        "temp": "Temperature (°C)", "humidity": "Humidity (%)", "pressure": "Pressure (hPa)",
+        "temp": "Temperature (°C)", "humidity": "Humidity (%)",
+        "pressure": "Pressure (hPa)",
         "gasvoc": "Gas Resistance (Ω)", "piname": "Pi",
     })
     df['Time'] = pd.to_datetime(df['Time'])
-    df = df.astype({"Temperature (°C)": float, "Humidity (%)": float, "Pressure (hPa)": float,
-                    "Gas Resistance (Ω)": float})
+    df = df.astype({"Temperature (°C)": float, "Humidity (%)": float,
+                    "Pressure (hPa)": float, "Gas Resistance (Ω)": float})
     df = df.round(1)
-    cols = ["Time", "Location", "Temperature (°C)", "Humidity (%)", "Pressure (hPa)",
-            "Gas Resistance (Ω)"]
+    cols = ["Time", "Location", "Temperature (°C)", "Humidity (%)",
+            "Pressure (hPa)", "Gas Resistance (Ω)"]
     table = df.to_html(columns=cols, index=False, justify='left',
                        classes="table", table_id="latest_results")
     return table

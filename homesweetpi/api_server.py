@@ -45,10 +45,10 @@ def charts():
     except (ValueError, TypeError):
         n_days = default_days
     resample_freq = '30T'
-    rewrite_chart(n_days, resample_freq)
+    chart = rewrite_chart(n_days, resample_freq, save=False)
     context = dict(
         sub_title=f"Readings for the last {n_days} days",
-
+        chart=chart,
     )
     return render_template('charts.html',  **context)
 
