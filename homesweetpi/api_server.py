@@ -33,7 +33,14 @@ def main_page():
 
 @app.route('/charts')
 def charts():
-    n_days = 5
+    max_days = 100
+    default_days = 7
+    n_days = request.args[f'n_days']
+    try:
+        n_days = int(n_days)
+        n_days = min(n_days, max_days)
+    except (ValueError, TypeError):
+        n_days = default_days
     resample_freq = '30T'
     rewrite_chart(n_days, resample_freq)
     context = dict(
@@ -41,6 +48,7 @@ def charts():
 
     )
     return render_template('charts.html',  **context)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port='5002', debug=False)
