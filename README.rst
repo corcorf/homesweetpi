@@ -3,17 +3,8 @@ HomeSweetPi
 ===========
 
 
-.. image:: https://img.shields.io/pypi/v/homesweetpi.svg
-        :target: https://pypi.python.org/pypi/homesweetpi
-
 .. image:: https://img.shields.io/travis/corcorf/homesweetpi.svg
         :target: https://travis-ci.com/corcorf/homesweetpi
-
-.. image:: https://readthedocs.org/projects/homesweetpi/badge/?version=latest
-        :target: https://homesweetpi.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
-
 
 
 This repository is part of an ongoing data-pipeline project to create a home
@@ -48,7 +39,9 @@ a RESTful API, which is also built in Flask.
 Features
 --------
 
-* TODO
+* Management of PostGreSQL DB with SQLalchemy
+* Web-interface and RESTful API in Flask
+* Handling of scehduled data retrieval and API / web-interface services with Systemd
 
 Credits
 -------
