@@ -18,11 +18,11 @@ HomeSweetPi
 
 This repository is part of an ongoing data-pipeline project to create a home
 environment monitoring system with python and a network of Raspberry Pis.
-The other part of the project can be found in my pi_logger repository
-(github.com/corcorf/pi_logger). An overview of the project architecture is
+The other part of the project can be found in my pi_logger_ repository. An overview of the project architecture is
 shown in the figure below:
+.. _pi_logger: https://www.github.com/corcorf/pi_logger/
 
-.. image:: images/
+.. image:: images/architecture_sketch_2.svg.png
 
 Pi_logger runs on Raspberry Pis equipped with environment monitoring sensors
 (currently the DHT22 and BME680 sensors are supported). It polls the sensors
