@@ -9,8 +9,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 SECRET_KEY = os.getenv("DARKSKYKEY")
 LOCATION = "TempelhoferFeld"
-LATITUDE = '13.407762'  # Tempelhofer Feld
-LONGITUDE = '52.475752'
+LATITUDE = '52.475752'  # Tempelhofer Feld
+LONGITUDE = '13.407762'
 TIMEZONE = 'CET'  # Central European Time
 PATH = os.path.join(os.path.expanduser("~"),
                     "spiced", "data", "homesweetpi", "weather_data")
@@ -21,7 +21,7 @@ def get_weather_data(time_string):
     Query the DarkSky API for data for a given time_string
     Returns a json
     '''
-    url_stem = 'https://api.darksky.net/forecast/{}/{},{},{}'
+    url_stem = 'https://api.darksky.net/forecast/{}/{},{},{}?units=si'
     url = url_stem.format(SECRET_KEY, LATITUDE, LONGITUDE, time_string)
     logging.debug(f"requesting data for url {url}")
     response = requests.get(url)
