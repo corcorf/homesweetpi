@@ -22,7 +22,7 @@ The other part of the project can be found in my pi_logger repository
 (github.com/corcorf/pi_logger). An overview of the project architecture is
 shown in the figure below:
 
-.. image:: images/
+.. image:: images/architecture_sketch_2.svg
 
 Pi_logger runs on Raspberry Pis equipped with environment monitoring sensors
 (currently the DHT22 and BME680 sensors are supported). It polls the sensors
