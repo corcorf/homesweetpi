@@ -701,8 +701,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="641.41327"
-     inkscape:cy="438.65462"
+     inkscape:cx="383.05595"
+     inkscape:cy="352.68793"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -729,9 +729,9 @@
      id="layer1">
     <g
        id="g8544"
-       transform="matrix(0.89432245,0,0,0.89432245,127.63149,44.285929)" />
+       transform="matrix(0.89432245,0,0,0.89432245,127.63149,35.939377)" />
     <flowRoot
-       transform="translate(16.479359,-24.571209)"
+       transform="translate(16.479359,-32.917761)"
        xml:space="preserve"
        id="flowRoot6105"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
@@ -743,7 +743,7 @@
            y="169.41507" /></flowRegion><flowPara
          id="flowPara6111" /></flowRoot>    <g
        id="g17806"
-       transform="translate(14.341203,-3.7179577)">
+       transform="translate(14.341203,-12.06451)">
       <g
          transform="translate(0,67.905071)"
          id="g8520">
@@ -757,7 +757,7 @@
       </g>
     </g>
     <g
-       transform="matrix(1.1723656,0,0,1.1723656,-18.929614,74.519393)"
+       transform="matrix(1.1723656,0,0,1.1723656,-18.929614,66.172841)"
        id="g8034"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96">
@@ -801,7 +801,7 @@
       </g>
     </g>
     <g
-       transform="matrix(1.1723656,0,0,1.1723656,77.895903,74.491558)"
+       transform="matrix(1.1723656,0,0,1.1723656,77.895903,66.145006)"
        id="g7148"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96">
@@ -854,7 +854,8 @@
     <g
        id="g9220"
        inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96">
+       inkscape:export-ydpi="96"
+       transform="translate(0,-8.3465525)">
       <g
          transform="translate(-0.62589145,-10.212541)"
          id="g17274">
@@ -944,7 +945,7 @@
            y="62.056332"
            ry="1.3521303" />
         <rect
-           style="opacity:0.83999999;fill:#30b3f7;fill-opacity:0;stroke:#910d77;stroke-width:1.2;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.97058835;paint-order:markers stroke fill"
+           style="opacity:0.83999999;fill:#30b3f7;fill-opacity:0;stroke:#910d77;stroke-width:1.20000005;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.97058835;paint-order:markers stroke fill"
            id="rect8578"
            width="54.125484"
            height="27.839844"
@@ -1320,8 +1321,7 @@
       </g>
       <g
          transform="translate(14.341203,63.057701)"
-         id="g17667"
-         style="">
+         id="g17667">
         <g
            transform="translate(0,0.38869005)"
            id="g17659">
@@ -1369,8 +1369,7 @@
       </g>
       <g
          id="g8482"
-         transform="matrix(0.02153628,0,0,0.02153628,51.478654,88.869539)"
-         style="">
+         transform="matrix(0.02153628,0,0,0.02153628,51.478654,88.869539)">
         <path
            id="path8454"
            d="m 158.38,1.6562 c -3.6193,0.11232 -7.5172,1.4493 -11.938,4.9375 -10.83,-4.1763 -21.33,-5.6271 -30.72,2.8751 C 101.222,7.588 96.51,11.469 92.94,16 89.757,15.934 69.121,12.728 59.658,26.844 35.877,24.03 28.361,40.832 36.877,56.5 c -4.8569,7.519 -9.8895,14.947 1.4688,29.281 -4.018,7.9835 -1.5274,16.644 7.9375,27.125 -2.4979,11.223 2.4121,19.141 11.219,25.312 -1.6471,15.358 14.084,24.287 18.781,27.469 1.8037,8.9487 5.5629,17.393 23.531,22.062 2.9632,13.336 13.762,15.639 24.219,18.438 -34.562,20.09 -64.201,46.523 -64,111.38 l -5.0625,9.0312 c -39.63,24.1 -75.285,101.56 -19.53,164.52 3.6419,19.708 9.7496,33.864 15.188,49.531 8.1338,63.131 61.218,92.692 75.219,96.188 20.517,15.628 42.368,30.457 71.938,40.844 27.875,28.749 58.074,39.706 88.438,39.688 0.44515,-2.8e-4 0.89853,0.005 1.3438,0 30.364,0.0189 60.562,-10.938 88.438,-39.688 29.569,-10.387 51.421,-25.216 71.938,-40.844 14.001,-3.4959 67.085,-33.057 75.219,-96.188 5.4379,-15.667 11.546,-29.823 15.188,-49.531 55.754,-62.965 20.1,-140.43 -19.531,-164.53 l -5.07,-9.03 c 0.20067,-64.852 -29.438,-91.285 -64,-111.38 10.457,-2.7984 21.256,-5.1014 24.219,-18.438 17.968,-4.6698 21.728,-13.114 23.531,-22.062 4.6978,-3.1813 20.428,-12.111 18.781,-27.469 8.8067,-6.1716 13.717,-14.09 11.219,-25.312 9.4649,-10.481 11.956,-19.141 7.9375,-27.125 11.36,-14.328 6.32,-21.756 1.47,-29.275 8.51,-15.668 1,-32.47 -22.79,-29.656 -9.46,-14.116 -30.09,-10.91 -33.28,-10.844 -3.57,-4.531 -8.28,-8.412 -22.78,-6.5312 -9.39,-8.5022 -19.89,-7.0514 -30.72,-2.875 -12.86,-10.148 -21.37,-2.0133 -31.09,1.0624 -15.57,-5.0877 -19.13,1.881 -26.78,4.7188 -16.98,-3.5881 -22.14,4.224 -30.28,12.469 l -9.4688,-0.1875 c -25.611,15.093 -38.334,45.826 -42.844,61.625 -4.5121,-15.802 -17.206,-46.535 -42.812,-61.625 l -9.4688,0.1875 c -8.15,-8.245 -13.31,-16.057 -30.29,-12.469 -7.65,-2.8378 -11.2,-9.8065 -26.78,-4.7188 -6.3797,-2.0185 -12.247,-6.2144 -19.156,-6 z"
@@ -1472,8 +1471,7 @@
       <g
          inkscape:label="Calque 1"
          id="g8496"
-         transform="matrix(0.13129008,0,0,0.13129008,10.002152,82.79938)"
-         style="">
+         transform="matrix(0.13129008,0,0,0.13129008,10.002152,82.79938)">
         <g
            id="g8494"
            transform="translate(428.42338,184.2561)">
@@ -1492,8 +1490,7 @@
       <g
          transform="matrix(0.07715683,0,0,-0.07715683,85.706225,134.07342)"
          inkscape:label="ink_ext_XXXXXX"
-         id="g8506"
-         style="">
+         id="g8506">
         <g
            transform="matrix(1.5512433,0,0,1.5512433,-16.326028,-27.718348)"
            id="g8504">
@@ -1577,7 +1574,21 @@
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="cc" />
     </g>
-  </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1096"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,21.638383,4.3534482)"><flowRegion
+         id="flowRegion1098"
+         style="font-size:16px"><rect
+           id="rect1100"
+           width="892.97485"
+           height="96.97464"
+           x="96.97464"
+           y="720.96979"
+           style="font-size:16px" /></flowRegion><flowPara
+         id="flowPara1102">Humidity Sensor by Jessica Gelzinus from the Noun Project</flowPara><flowPara
+         id="flowPara1104">internet by Vectorstall from the Noun Project</flowPara></flowRoot>  </g>
   <style
      id="style2877"
      type="text/css">
