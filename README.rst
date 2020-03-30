@@ -20,6 +20,7 @@ This repository is part of an ongoing data-pipeline project to create a home
 environment monitoring system with python and a network of Raspberry Pis.
 The other part of the project can be found in my pi_logger_ repository. An overview of the project architecture is
 shown in the figure below:
+
 .. _pi_logger: https://www.github.com/corcorf/pi_logger/
 
 .. image:: images/architecture_sketch_2.svg
