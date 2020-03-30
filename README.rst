@@ -16,11 +16,25 @@ HomeSweetPi
 
 
 
-A home assistant and monitoring suite built with python and a network of Raspberry Pis
+This repository is part of an ongoing data-pipeline project to create a home
+environment monitoring system with python and a network of Raspberry Pis.
+The other part of the project can be found in my pi_logger repository
+(github.com/corcorf/pi_logger). An overview of the project architecture is
+shown in the figure below:
 
+.. image:: images/
+
+Pi_logger runs on Raspberry Pis equipped with environment monitoring sensors
+(currently the DHT22 and BME680 sensors are supported). It polls the sensors
+for new readings at a frequency specified in a config file and saves these to
+a local SQLite database. It also runs a RESTful API in Flask that allows remote
+machines to retrieve the data at will.
+The HomeSweetPi package contains code for regularly retrieving data from
+machines running the Pi_logger API and adding this to a central PostGresSQL
+database. The contents of this central database may then be accessed through
+a web interface and RESTFUL API, also built in Flask.
 
 * Free software: MIT license
-* Documentation: https://homesweetpi.readthedocs.io.
 
 
 Features
