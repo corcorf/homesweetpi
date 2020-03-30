@@ -1,15 +1,12 @@
+"""
+Module to retrieve data from the PostGresDB at a specified frequency
+"""
+import json
 import pandas as pd
 import altair as alt
-import logging
-from sqlalchemy import distinct
-from homesweetpi.sql_tables import Measurement, Sensor, RaspberryPi, Base,\
-                                   get_sensors_on_pi, one_or_more_results,\
-                                   get_last_time, get_ip_addr,\
-                                   get_last_n_days, resample_measurements,\
-                                   get_last_measurement_for_sensor,\
-                                   get_all_sensors, get_sensors_and_pis
-from datetime import datetime, timedelta
-import json
+from homesweetpi.sql_tables import (get_last_n_days, resample_measurements,
+                                    get_last_measurement_for_sensor,
+                                    get_all_sensors, get_sensors_and_pis)
 
 
 def create_selection(datetime_col="Time"):
@@ -19,7 +16,7 @@ def create_selection(datetime_col="Time"):
     point & selects based on x-value
     """
     return alt.selection(type='single', on='mouseover',
-                              fields=[datetime_col], nearest=True)
+                         fields=[datetime_col], nearest=True)
 
 
 def create_lines(source, datetime_col="Time", logger_col="Location"):
@@ -89,18 +86,19 @@ def create_rules(source, nearest, datetime_col="datetime"):
     return rules
 
 
-def create_chart(lines, selectors, points, rules, text,
-                 row_repeat=["Temperature (°C)", 'Relative Humidity (%)',
-                             'Pressure (hPa)', 'Gas Resistance (Ω)'],
+def create_chart(chart_components,
+                 rows,
                  width=600, height=200):
     """
     Component of Altair plot creation.
-    Put the five layers into a chart and bind the data
+    Put the components into a chart and bind the data
+    chart_components is a dictionary containing Altair chart components,
+    eg lines, selectors, points, rules, text,
     """
-    chart = alt.layer(lines, selectors, points, rules, text
+    chart = alt.layer(**chart_components,
                       ).properties(
                           width=width, height=height
-                      ).repeat(row=row_repeat).interactive()
+                      ).repeat(row=rows).interactive()
     return chart
 
 
@@ -111,7 +109,6 @@ def format_chart(chart):
     """
     chart = chart.configure_title(fontSize=16,
                                   color='darkgray',
-                                  # fontWeight="normal",
                                   anchor="start",
                                   frame="group")
     chart = chart.configure_axisLeft(labelFontSize=12,
@@ -130,14 +127,19 @@ def create_altair_plot(source, datetime_col='Time', logger_col='Location',
     """
     nearest = create_selection()
     lines = create_lines(source, datetime_col, logger_col)
-    selectors = create_selectors(source, nearest, datetime_col)
-    points = create_points(lines, nearest)
-    text = create_text(lines, nearest)
-    rules = create_rules(source, nearest, datetime_col)
-    chart = create_chart(lines, selectors, points, rules, text,
-                         ["Temperature (°C)", 'Relative Humidity (%)',
-                          'Pressure (hPa)', 'Gas Resistance (Ω)'],
-                         600, 200).properties(title=title)
+    chart_components = dict(
+        lines=lines,
+        selectors=create_selectors(source, nearest, datetime_col),
+        points=create_points(lines, nearest),
+        text=create_text(lines, nearest),
+        rules=create_rules(source, nearest, datetime_col),
+    )
+    rows = [
+        "Temperature (°C)", 'Relative Humidity (%)',
+        'Pressure (hPa)', 'Gas Resistance (Ω)'
+    ]
+    chart = create_chart(chart_components, rows, 600, 200
+                         ).properties(title=title)
     chart = format_chart(chart)
     return chart
 
@@ -161,7 +163,7 @@ def prepare_chart_data(logs, resample_freq='30T'):
 
 
 def rewrite_chart(n_days=5, resample_freq='30T',
-                  fn="homesweetpi/static/altair_chart_recent_data.json"):
+                  filename="homesweetpi/static/altair_chart_recent_data.json"):
     """
     create an altair chart with data from the last n days and save as json
     """
@@ -169,7 +171,7 @@ def rewrite_chart(n_days=5, resample_freq='30T',
     logs = get_last_n_days(n_days)
     source = prepare_chart_data(logs, resample_freq)
     chart = create_altair_plot(source, title=title)
-    chart.save(fn)
+    chart.save(filename)
 
 
 def get_most_recent_readings():
@@ -188,19 +190,26 @@ def recent_readings_as_html():
     """
     Convert json of latest sensor results to html for rending
     """
-    df = pd.read_json(get_most_recent_readings()).T
-    df = df.rename(columns={
+    readings = pd.read_json(get_most_recent_readings()).T
+    readings = readings.rename(columns={
         "strftime": "Time", "sensorid": "Sensor ID",
         "sensorlocation": "Location",
-        "temp": "Temperature (°C)", "humidity": "Humidity (%)", "pressure": "Pressure (hPa)",
-        "gasvoc": "Gas Resistance (Ω)", "piname": "Pi",
+        "temp": "Temperature (°C)", "humidity": "Humidity (%)",
+        "pressure": "Pressure (hPa)", "gasvoc": "Gas Resistance (Ω)",
+        "piname": "Pi",
     })
-    df['Time'] = pd.to_datetime(df['Time'])
-    df = df.astype({"Temperature (°C)": float, "Humidity (%)": float, "Pressure (hPa)": float,
-                    "Gas Resistance (Ω)": float})
-    df = df.round(1)
-    cols = ["Time", "Location", "Temperature (°C)", "Humidity (%)", "Pressure (hPa)",
-            "Gas Resistance (Ω)"]
-    table = df.to_html(columns=cols, index=False, justify='left',
-                       classes="table", table_id="latest_results")
+    readings['Time'] = pd.to_datetime(readings['Time'])
+    readings = readings.astype({
+        "Temperature (°C)": float, "Humidity (%)": float,
+        "Pressure (hPa)": float, "Gas Resistance (Ω)": float
+    })
+    readings = readings.round(1)
+    cols = [
+        "Time", "Location", "Temperature (°C)", "Humidity (%)",
+        "Pressure (hPa)", "Gas Resistance (Ω)"
+    ]
+    table = readings.to_html(
+        columns=cols, index=False, justify='left',
+        classes="table", table_id="latest_results"
+    )
     return table
