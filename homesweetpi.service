@@ -5,7 +5,7 @@ After=multi-user.target
 [Service]
 WorkingDirectory=/home/ubuntu/homesweetpi/
 User=ubuntu
-ExecStart=/usr/bin/bash /home/ubuntu/homesweetpi/start.sh
+ExecStart=/usr/bin/bash start.sh
 
 [Install]
 WantedBy=multi-user.target
