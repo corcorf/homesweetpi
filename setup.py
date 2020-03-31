@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# pylint: disable=C0103
 """The setup script."""
 
 from setuptools import setup, find_packages
