@@ -11,10 +11,11 @@ python:
 install:
   # - pip install -U tox-travis
   - pip install -r requirements.txt
+  - pip install -r requirements_dev.txt
 # Command to run tests, e.g. python setup.py test
 script:
   # - tox
-  - pylint.py
+  - pylint *.py
   - pytest
 
 # Assuming you have installed the travis-ci CLI tool, after you
