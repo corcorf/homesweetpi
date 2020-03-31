@@ -95,7 +95,7 @@ def create_chart(chart_components,
     chart_components is a dictionary containing Altair chart components,
     eg lines, selectors, points, rules, text,
     """
-    chart = alt.layer(**chart_components,
+    chart = alt.layer(*chart_components.values(),
                       ).properties(
                           width=width, height=height
                       ).repeat(row=rows).interactive()
