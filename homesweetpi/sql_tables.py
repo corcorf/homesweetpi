@@ -14,6 +14,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+from sqlalchemy.inspection import inspect
 
 HOST = os.getenv('POSTGRES_SERVER_ADDRESS')
 PORT = '5432'
@@ -117,14 +118,6 @@ class Measurement(BASE):
             gasvoc=self.gasvoc,
         )
         return data
-
-    def get_columns():
-        """
-        Returns a list of the table's column names
-        """
-        return ["sensorid", "datetime",
-                "temp", "humidity",
-                "pressure", "gasvoc"]
 
 
 def create_tables(engine=ENGINE):
@@ -261,7 +254,7 @@ def get_measurements_since(since_datetime, session=SESSION(),
     query = session.query(table)\
                    .filter(getattr(table, datetime_col) >= since_datetime)
     if one_or_more_results(query):
-        output_cols = table.get_columns()
+        output_cols = [c.name for c in inspect(table).columns]
         i = query.values(*output_cols)
         logs = pd.DataFrame(i)
     logs = logs.sort_values(by=datetime_col)
