@@ -1,9 +1,12 @@
+"""
+Script for grabbing weather data from DarkSky API dumping to file
+"""
 import os
+import json
+import logging
+from datetime import datetime, timedelta
 import requests
 import pandas as pd
-import json
-from datetime import datetime, timedelta
-import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -23,47 +26,51 @@ def get_weather_data(time_string):
     '''
     url_stem = 'https://api.darksky.net/forecast/{}/{},{},{}?units=si'
     url = url_stem.format(SECRET_KEY, LATITUDE, LONGITUDE, time_string)
-    logging.debug(f"requesting data for url {url}")
+    logging.debug("requesting data for url %s", url)
     response = requests.get(url)
     return response.json()
 
 
-def dump_to_json(weather_data, time_string, location=LOCATION, path=PATH,
-                 fn_template="DarkSky_{}_{}.json"):
-    fn = fn_template.format(location, time_string.replace(':', ''))
-    fn = os.path.join(path, fn)
-    logging.debug(f"dumping json for time_string {time_string}")
-    with open(fn, 'w') as fp:
-        json.dump(weather_data, fp)
+def dump_to_json(json_obj, time_string, location=LOCATION, path=PATH,
+                 filename_template="DarkSky_{}_{}.json"):
+    """
+    Dump a json object (json_obj) to file
+    """
+    filename = filename_template.format(location, time_string.replace(':', ''))
+    filename = os.path.join(path, filename)
+    logging.debug("dumping json for time_string %s", time_string)
+    with open(filename, 'w') as filepath:
+        json.dump(json_obj, filepath)
 
 
-def convert_to_df(weather_data, level='hourly', tz=TIMEZONE):
+def convert_to_df(weather_data, level='hourly', timezone=TIMEZONE):
     """
     Convert a json from the DarkSky API to a DataFrame using the specified time
     level
     Return a Pandas DataFrame
     """
-    logging.debug(f"converting {level} data to dataframe")
-    df = pd.DataFrame(weather_data[level]['data'])
-    dt = pd.to_datetime(df['time'], unit='s')
-    df['time'] = dt.dt.tz_localize('UTC').dt.tz_convert(tz)
-    return df
+    logging.debug("converting %s data to dataframe", level)
+    weather_data = pd.DataFrame(weather_data[level]['data'])
+    datetime_series = pd.to_datetime(weather_data['time'], unit='s')
+    weather_data['time'] = datetime_series.dt.tz_localize('UTC')\
+                                          .dt.tz_convert(timezone)
+    return weather_data
 
 
 def dump_jsons_for_date_range(date_range,
                               location=LOCATION,
                               path=PATH,
-                              fn_template="DarkSky_{}_{}.json"):
+                              filename_template="DarkSky_{}_{}.json"):
     """
     Fetch data for a range of times and dump jsons to file
     """
     time_strings = [dt.strftime('%Y-%m-%dT%H:%M:%S')
                     for dt in date_range]
-    for t in time_strings:
-        logging.debug(f"requesting data for time_string {t}")
-        weather_data = get_weather_data(t)
-        dump_to_json(weather_data, t, location=location, path=path,
-                     fn_template=fn_template)
+    for time_t in time_strings:
+        logging.debug("requesting data for time_string %s", time_t)
+        weather_data = get_weather_data(time_t)
+        dump_to_json(weather_data, time_t, location=location, path=path,
+                     filename_template=filename_template)
 
 
 def get_dfs_for_date_range(date_range, path=PATH, level='hourly',
@@ -74,27 +81,47 @@ def get_dfs_for_date_range(date_range, path=PATH, level='hourly',
     time_strings = [dt.strftime('%Y-%m-%dT%H:%M:%S')
                     for dt in date_range]
     list_of_dfs = []
-    for t in time_strings:
-        logging.debug(f"requesting data for time_string {t}")
-        weather_data = get_weather_data(t)
+    for time_t in time_strings:
+        logging.debug("requesting data for time_string %s", time_t)
+        weather_data = get_weather_data(time_t)
         if dump_json:
-            dump_to_json(weather_data, t, location=location, path=path,
-                         fn_template="DarkSky_{}_{}.json")
-        df = convert_to_df(weather_data, level=level, tz=TIMEZONE)
-        list_of_dfs.append(df)
-    df = pd.concat(list_of_dfs, sort=False)
-    return df
+            dump_to_json(weather_data, time_t, location=location, path=path,
+                         filename_template="DarkSky_{}_{}.json")
+        df_t = convert_to_df(weather_data, level=level, timezone=TIMEZONE)
+        list_of_dfs.append(df_t)
+    concatenated_data = pd.concat(list_of_dfs, sort=False)
+    return concatenated_data
+
+
+def main(first_datetime, last_datetime=None):
+    """
+    Grab data from the DarkSky API for every day up to the present
+    Dump the json from each day to file and save the hourly data to a csv file
+    Parameters:
+        first (datetime.datetime): Beginning of the daterange to be grabbed.
+        last (datetime.datetime): Last day of the daterange to be grabbed.
+                                  Defaults to yesterdays date.
+    """
+    time_now = datetime.now()
+    if last_datetime is None:
+        today = datetime(time_now.year, time_now.month, time_now.day)
+        yesterday = today - timedelta(days=1)
+        last_datetime = yesterday
+    date_range = pd.date_range(
+        first_datetime, last_datetime,
+        freq='d',
+        tz=TIMEZONE,
+    )
+    # dump_jsons_for_date_range(date_range)
+    str_format = '%Y%m%dT%H%M%S'
+    csv_filename = "DarkSky_{}_{}-{}.csv".format(
+        LOCATION,
+        first_datetime.strftime(str_format),
+        last_datetime.strftime(str_format),
+    )
+    csv_filepath = os.path.join(PATH, csv_filename)
+    get_dfs_for_date_range(date_range).to_csv(csv_filepath, index=False)
 
 
 if __name__ == "__main__":
-    dt = datetime.now()
-    today = datetime(dt.year, dt.month, dt.day)
-    yesterday = today - timedelta(days=1)
-    first = datetime(2019, 10, 8)
-    date_range = pd.date_range(first, yesterday, freq='d', tz=TIMEZONE)
-    # dump_jsons_for_date_range(date_range)
-    fn = "DarkSky_{}_{}-{}.csv".format(LOCATION,
-                                       first.strftime('%Y%m%dT%H%M%S'),
-                                       yesterday.strftime('%Y%m%dT%H%M%S'))
-    fp = os.path.join(PATH, fn)
-    get_dfs_for_date_range(date_range).to_csv(fp, index=False)
+    main(first_datetime=datetime(2019, 10, 8))

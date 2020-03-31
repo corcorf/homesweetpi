@@ -4,7 +4,7 @@ API server for the homesweetpi module
 adapted from:
 https://www.codementor.io/@sagaragarwal94/building-a-basic-restful-api-in-python-58k02xsiq
 """
-
+# pylint: disable=C0103
 import logging
 from flask import Flask
 from flask import render_template, request
@@ -17,7 +17,6 @@ app = Flask("homesweetpi")
 api = Api(app)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-# Session = sessionmaker(bind=ENGINE)
 logging.basicConfig(filename='homesweetpi_api.log', level=logging.DEBUG)
 
 
@@ -29,6 +28,7 @@ class GetLast(Resource):
         """
         Return a JSON with the most recent readings for each sensor in DB
         """
+        # pylint: disable=R0201
         return get_most_recent_readings()
 
 
@@ -68,5 +68,5 @@ def charts():
 
 api.add_resource(GetLast, '/get_last')
 
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port='5002', debug=False)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port='5002', debug=False)

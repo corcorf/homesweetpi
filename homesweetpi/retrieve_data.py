@@ -44,34 +44,34 @@ def fetch_recent_data(pi_id, query_time, port=5002):
     ipaddr = get_ip_addr(pi_id)
     strftime = query_time.strftime('%Y%m%d%H%M%S')
     url = f"http://{ipaddr}:{port}/get_recent/{strftime}"
-    LOG.debug(f"fetching data from {url}")
+    LOG.debug("fetching data from %s", url)
     try:
         response = requests.get(url)
         recent_data = response.json()
-        LOG.debug(f"recieved json with length {len(recent_data)}")
+        LOG.debug("recieved json with length %s", len(recent_data))
     except ConnectionError as error:
-        LOG.debug(f"ConnectionError from {ipaddr}: {error}")
+        LOG.debug("ConnectionError from %s: %s", ipaddr, error)
         msg = f'{{"message": "Could not connect to {ipaddr}"}}'
         recent_data = json.loads(msg)
     if len(recent_data) > 1:
         recent_data = json.loads(recent_data)
         recent_data = pd.DataFrame(recent_data)
-        LOG.debug(f"shape of fetched data is {recent_data.shape}")
+        LOG.debug("shape of fetched data is %s", recent_data.shape)
         recent_data['datetime'] = pd.to_datetime(recent_data['datetime'],
                                                  unit="ms")
         sensors = get_sensors_on_pi(pi_id)
-        LOG.debug(f"sensors on pi {pi_id} are {sensors}")
+        LOG.debug("sensors on pi %s are %s", pi_id, sensors)
         recent_data = recent_data.merge(sensors, on=['location', 'piname'])\
                                  .drop(["piname", "location", "sensortype",
                                         "pi_id"], axis=1)
-        LOG.debug(f"shape of fetched data after merge is {recent_data.shape}")
+        LOG.debug("shape of fetched data after merge is %s", recent_data.shape)
 
         recent_data = recent_data.drop_duplicates(subset=['datetime',
                                                           'sensorid'])
-        LOG.debug(f"shape of data after drop duplicates {recent_data.shape}")
+        LOG.debug("shape of data after drop duplicates %s", recent_data.shape)
         return recent_data
 
-    LOG.debug(f"contents of json: {recent_data}")
+    LOG.debug("contents of json: %s", recent_data)
     return None
 
 
@@ -89,18 +89,16 @@ if __name__ == "__main__":
                           log_path="")
     LOG.debug("fetching pi ids")
     IDS = get_pi_ids()
-    LOG.debug(f"pi ids {IDS}")
+    LOG.debug("pi ids %s", IDS)
     FREQ = 300
-    LOG.debug(f"fetch frequency set to {FREQ} seconds")
+    LOG.debug("fetch frequency set to %s seconds", FREQ)
     while True:
         for piid in IDS:
-            querytime = get_last_time(piid)
-            msg = f"most recent record in db for pi {piid} at {querytime}"
-            LOG.debug(msg)
-            querytime = round_up_seconds(querytime)
-            msg = f"fetching data for pi {piid} since time {querytime}"
-            LOG.debug(msg)
-            recentdata = fetch_recent_data(piid, querytime)
+            qtime = get_last_time(piid)
+            LOG.debug("most recent record in db for pi %s at %s", piid, qtime)
+            qtime = round_up_seconds(qtime)
+            LOG.debug("fetching data for pi %s since time %s", piid, qtime)
+            recentdata = fetch_recent_data(piid, qtime)
             if recentdata is None:
                 LOG.debug("No data to pass to sql")
             else:
@@ -109,6 +107,6 @@ if __name__ == "__main__":
                     recentdata.to_sql("measurements", ENGINE, index=False,
                                       if_exists="append")
                 except sqlalchemy.exc.IntegrityError as error:
-                    msg = f"Error saving  pi {piid} from {querytime}: {error}"
-                    LOG.warning(msg)
+                    LOG.warning("Error saving  pi %s from %s: %s",
+                                piid, qtime, error)
         time.sleep(FREQ)
