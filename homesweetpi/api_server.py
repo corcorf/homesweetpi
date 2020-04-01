@@ -24,11 +24,11 @@ class GetLast(Resource):
     """
     API route for getting the most recent sensor data from the DB
     """
+    # pylint: disable=R0201
     def get(self):
         """
         Return a JSON with the most recent readings for each sensor in DB
         """
-        # pylint: disable=R0201
         return get_most_recent_readings()
 
 
