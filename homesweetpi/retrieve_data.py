@@ -9,15 +9,15 @@ import time
 from datetime import datetime, timedelta
 import requests
 import pandas as pd
-import sqlalchemy
-from sql_tables import get_ip_addr, get_sensors_on_pi, get_last_time
-from sql_tables import ENGINE, get_pi_ids
+from homesweetpi.sql_tables import get_ip_addr, get_sensors_on_pi,\
+                                   get_last_time
+from homesweetpi.sql_tables import get_pi_ids, save_recent_data
 
 LOG = logging.getLogger(f'data_fetch')
 
 
 def set_up_python_logging(debug=False,
-                          log_filename="local_loggers.log",
+                          log_filename="homesweetpi.log",
                           log_path=""):
     """
     Set up the python logging module
@@ -34,6 +34,31 @@ def set_up_python_logging(debug=False,
     else:
         # logging.basicConfig(filename=filename, level=logging.INFO)
         LOG.setLevel(logging.INFO)
+
+
+def process_fetched_data(recent_data):
+    """
+    Parse the json-like string fetched from the pi_logger api
+    merge with the sensor information
+    return as a pandas dataframe
+    """
+    recent_data = json.loads(recent_data)
+    recent_data = pd.DataFrame(recent_data)
+    LOG.debug("shape of fetched data is %s", recent_data.shape)
+    recent_data['datetime'] = pd.to_datetime(recent_data['datetime'],
+                                             unit="ms")
+    assert recent_data['piid'].unique().size == 1
+    pi_id = recent_data['piid'].unique()[0]
+    sensors = get_sensors_on_pi(pi_id)
+    LOG.debug("sensors on pi %s are %s", pi_id, sensors)
+    recent_data = recent_data.merge(sensors, on=['location', 'piname'])\
+                             .drop(["piname", "location", "sensortype",
+                                    "pi_id"], axis=1)
+    LOG.debug("shape of fetched data after merge is %s", recent_data.shape)
+    recent_data = recent_data.drop_duplicates(subset=['datetime',
+                                                      'sensorid'])
+    LOG.debug("shape of data after drop duplicates %s", recent_data.shape)
+    return recent_data
 
 
 def fetch_recent_data(pi_id, query_time, port=5002):
@@ -54,21 +79,7 @@ def fetch_recent_data(pi_id, query_time, port=5002):
         msg = f'{{"message": "Could not connect to {ipaddr}"}}'
         recent_data = json.loads(msg)
     if len(recent_data) > 1:
-        recent_data = json.loads(recent_data)
-        recent_data = pd.DataFrame(recent_data)
-        LOG.debug("shape of fetched data is %s", recent_data.shape)
-        recent_data['datetime'] = pd.to_datetime(recent_data['datetime'],
-                                                 unit="ms")
-        sensors = get_sensors_on_pi(pi_id)
-        LOG.debug("sensors on pi %s are %s", pi_id, sensors)
-        recent_data = recent_data.merge(sensors, on=['location', 'piname'])\
-                                 .drop(["piname", "location", "sensortype",
-                                        "pi_id"], axis=1)
-        LOG.debug("shape of fetched data after merge is %s", recent_data.shape)
-
-        recent_data = recent_data.drop_duplicates(subset=['datetime',
-                                                          'sensorid'])
-        LOG.debug("shape of data after drop duplicates %s", recent_data.shape)
+        recent_data = process_fetched_data(recent_data)
         return recent_data
 
     LOG.debug("contents of json: %s", recent_data)
@@ -103,10 +114,7 @@ if __name__ == "__main__":
                 LOG.debug("No data to pass to sql")
             else:
                 LOG.debug("saving fetched data to db")
-                try:
-                    recentdata.to_sql("measurements", ENGINE, index=False,
-                                      if_exists="append")
-                except sqlalchemy.exc.IntegrityError as error:
-                    LOG.warning("Error saving  pi %s from %s: %s",
-                                piid, qtime, error)
+            if not save_recent_data(recentdata):
+                LOG.warning("Error saving  pi %s from %s: %s",
+                            piid, qtime)
         time.sleep(FREQ)

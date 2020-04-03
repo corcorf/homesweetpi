@@ -9,6 +9,7 @@ import logging
 from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
+import sqlalchemy
 from sqlalchemy import create_engine, distinct
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
@@ -132,9 +133,10 @@ def get_pi_names(session=SESSION()):
     """
     Return an array of unique raspberry pi names
     """
-    query = session.query(RaspberryPi)
+    query = session.query(RaspberryPi).subquery()
     result = session.query(distinct(query.c.name)).all()
     result = np.array(result).reshape(-1).astype(str)
+    result.sort()
     return result
 
 
@@ -142,9 +144,10 @@ def get_pi_ips(session=SESSION()):
     """
     Return an array of unique raspberry pi ip addresses
     """
-    query = session.query(RaspberryPi)
+    query = session.query(RaspberryPi).subquery()
     result = session.query(distinct(query.c.ipaddress)).all()
     result = np.array(result).reshape(-1).astype(str)
+    result.sort()
     return result
 
 
@@ -152,14 +155,18 @@ def get_pi_names_and_addresses(session=SESSION()):
     """
     Return a list of name, ip-address tuples
     """
-    return session.query(RaspberryPi.name, RaspberryPi.ipaddress).all()
+    result = session.query(RaspberryPi.name, RaspberryPi.ipaddress).all()
+    result.sort()
+    return result
 
 
 def get_pi_ids(session=SESSION()):
     """
     Return a list of pi id numbers
     """
-    return np.array(session.query(RaspberryPi.id).all()).flatten()
+    result = np.array(session.query(RaspberryPi.id).all()).flatten()
+    result.sort()
+    return result
 
 
 def load_sensor_and_pi_info(pi_file, sensor_file, engine=ENGINE):
@@ -174,6 +181,17 @@ def load_sensor_and_pi_info(pi_file, sensor_file, engine=ENGINE):
     sensors.to_sql("sensors", engine, index=False, if_exists="append")
 
 
+def get_sensor_locations(session=SESSION()):
+    """
+    Return an array of unique sensor locations
+    """
+    query = session.query(Sensor).subquery()
+    result = session.query(distinct(query.c.location)).all()
+    result = np.array(result).reshape(-1).astype(str)
+    result.sort()
+    return result
+
+
 def get_all_sensors(session=SESSION()):
     """
     Return an array of unique sensor names
@@ -181,6 +199,7 @@ def get_all_sensors(session=SESSION()):
     query = session.query(Sensor).subquery()
     result = session.query(distinct(query.c.id)).all()
     result = np.array(result).reshape(-1).astype(str)
+    result.sort()
     return result
 
 
@@ -299,6 +318,18 @@ def get_last_measurement_for_sensor(sensorid, session=SESSION()):
         return result
     except NoResultFound:
         return None
+
+
+def save_recent_data(recent_data, table_name="measurements", engine=ENGINE):
+    """
+    send a pandas DataFrame of readings pulled from the pi_logger api to SQL
+    """
+    try:
+        recent_data.to_sql(table_name, engine, index=False,
+                           if_exists="append")
+        return True
+    except sqlalchemy.exc.IntegrityError:
+        return False
 
 
 if __name__ == "__main__":
