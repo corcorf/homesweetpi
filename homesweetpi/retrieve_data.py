@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import requests
 import pandas as pd
 from homesweetpi.sql_tables import get_ip_addr, get_sensors_on_pi,\
-                                   get_last_time
+                                   get_last_time, SESSION
 from homesweetpi.sql_tables import get_pi_ids, save_recent_data
 
 LOG = logging.getLogger(f'data_fetch')
@@ -36,7 +36,7 @@ def set_up_python_logging(debug=False,
         LOG.setLevel(logging.INFO)
 
 
-def process_fetched_data(recent_data):
+def process_fetched_data(recent_data, session=SESSION()):
     """
     Parse the json-like string fetched from the pi_logger api
     merge with the sensor information
@@ -49,7 +49,7 @@ def process_fetched_data(recent_data):
                                              unit="ms")
     assert recent_data['piid'].unique().size == 1
     pi_id = recent_data['piid'].unique()[0]
-    sensors = get_sensors_on_pi(pi_id)
+    sensors = get_sensors_on_pi(pi_id, session=session)
     LOG.debug("sensors on pi %s are %s", pi_id, sensors)
     recent_data = recent_data.merge(sensors, on=['location', 'piname'])\
                              .drop(["piname", "location", "sensortype",
@@ -61,7 +61,7 @@ def process_fetched_data(recent_data):
     return recent_data
 
 
-def fetch_recent_data(pi_id, query_time, port=5002):
+def fetch_recent_data(pi_id, query_time, session=SESSION(), port=5002):
     """
     Get all data since query_time from a raspberry pi identified by pi_id
     Returns a pandas dataframe
@@ -79,7 +79,7 @@ def fetch_recent_data(pi_id, query_time, port=5002):
         msg = f'{{"message": "Could not connect to {ipaddr}"}}'
         recent_data = json.loads(msg)
     if len(recent_data) > 1:
-        recent_data = process_fetched_data(recent_data)
+        recent_data = process_fetched_data(recent_data, session)
         return recent_data
 
     LOG.debug("contents of json: %s", recent_data)

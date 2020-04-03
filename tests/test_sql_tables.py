@@ -52,13 +52,13 @@ def test_create_db():
 def test_add_pi_info():
     """add sensor info from file to test.db"""
     load_sensor_and_pi_info(PI_FILE, SENSOR_FILE, engine=ENGINE)
-    pi_names_from_db = get_pi_names()
+    pi_names_from_db = get_pi_names(session=SESSION())
     pi_names_from_db.sort()
     assert isinstance(pi_names_from_db, np.ndarray)
     pi_names_from_file = PI_INFO['name'].values
     pi_names_from_file.sort()
     assert np.all(pi_names_from_db == pi_names_from_file)
-    sensor_locations_from_db = get_sensor_locations()
+    sensor_locations_from_db = get_sensor_locations(session=SESSION())
     assert isinstance(sensor_locations_from_db, np.ndarray)
     sensor_locations_from_file = SENSOR_CONFIG['location'].values
     sensor_locations_from_file.sort()
@@ -70,7 +70,7 @@ def test_json_processing():
     check that sample json can be processed and transformed into a dataframe
     """
     recent_data = SAMPLE_JSON
-    data_df = process_fetched_data(recent_data)
+    data_df = process_fetched_data(recent_data, session=SESSION())
     assert isinstance(data_df, pd.DataFrame)
     assert 'datetime' in data_df.columns
 
