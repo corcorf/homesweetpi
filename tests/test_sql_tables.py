@@ -102,7 +102,7 @@ def test_get_no_days():
 def test_save_recent_data():
     """test saving data to the test db"""
     recent_data = SAMPLE_JSON
-    data_df = process_fetched_data(recent_data)
+    data_df = process_fetched_data(recent_data, session=SESSION())
     save_recent_data(data_df, table_name="measurements", engine=ENGINE)
 
 
