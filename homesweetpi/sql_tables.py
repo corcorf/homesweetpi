@@ -276,7 +276,9 @@ def get_measurements_since(since_datetime, session=SESSION(),
         output_cols = [c.name for c in inspect(table).columns]
         i = query.values(*output_cols)
         logs = pd.DataFrame(i)
-    logs = logs.sort_values(by=datetime_col)
+        logs = logs.sort_values(by=datetime_col)
+    else:
+        logs = None
     return logs
 
 

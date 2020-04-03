@@ -53,7 +53,7 @@ def process_fetched_data(recent_data):
     LOG.debug("sensors on pi %s are %s", pi_id, sensors)
     recent_data = recent_data.merge(sensors, on=['location', 'piname'])\
                              .drop(["piname", "location", "sensortype",
-                                    "pi_id"], axis=1)
+                                    "piid"], axis=1)
     LOG.debug("shape of fetched data after merge is %s", recent_data.shape)
     recent_data = recent_data.drop_duplicates(subset=['datetime',
                                                       'sensorid'])
@@ -115,6 +115,6 @@ if __name__ == "__main__":
             else:
                 LOG.debug("saving fetched data to db")
             if not save_recent_data(recentdata):
-                LOG.warning("Error saving  pi %s from %s: %s",
+                LOG.warning("Error saving  pi %s from %s",
                             piid, qtime)
         time.sleep(FREQ)
