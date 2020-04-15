@@ -32,7 +32,7 @@ SENSOR_FILE = "logger_config.csv"
 PI_INFO = pd.read_csv(PI_FILE)
 SENSOR_CONFIG = pd.read_csv(SENSOR_FILE)
 
-SAMPLE_JSON = "{\"datetime\":{\"0\":1585930980235,\"1\":1585930980781},\
+SAMPLE_JSON = "{\"datetime\":{\"0\":%s,\"1\":%s},\
 \"location\":{\"0\":\"livingroom\",\"1\":\"piano\"},\
 \"sensortype\":{\"0\":\"dht22\",\"1\":\"dht22\"},\
 \"piname\":{\"0\":\"catflap\",\"1\":\"catflap\"},\
@@ -40,7 +40,8 @@ SAMPLE_JSON = "{\"datetime\":{\"0\":1585930980235,\"1\":1585930980781},\
 \"temp\":{\"0\":19.0,\"1\":19.1000003815},\
 \"humidity\":{\"0\":51.9000015259,\"1\":51.0999984741},\
 \"pressure\":{\"0\":null,\"1\":null},\
-\"gasvoc\":{\"0\":null,\"1\":null}}"
+\"gasvoc\":{\"0\":null,\"1\":null}}" \
+% (round(TEST_TIME.timestamp()*1000), round(TEST_TIME.timestamp()*1000))
 
 
 def test_create_db():
@@ -103,7 +104,17 @@ def test_save_recent_data():
     """test saving data to the test db"""
     recent_data = SAMPLE_JSON
     data_df = process_fetched_data(recent_data, session=SESSION())
-    save_recent_data(data_df, table_name="measurements", engine=ENGINE)
+    assert save_recent_data(data_df, table_name="measurements", engine=ENGINE)
+
+
+def test_some_results_1_day():
+    """
+    Check that the program correctly handles queries that do produce results
+    """
+    logs = get_last_n_days(1, session=SESSION(),
+                           table=Measurement, datetime_col="datetime")
+    assert isinstance(logs, pd.DataFrame)
+    assert logs.size
 
 
 def test_some_results():
