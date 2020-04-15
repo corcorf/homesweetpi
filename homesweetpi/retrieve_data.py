@@ -13,7 +13,7 @@ from homesweetpi.sql_tables import get_ip_addr, get_sensors_on_pi,\
                                    get_last_time, SESSION
 from homesweetpi.sql_tables import get_pi_ids, save_recent_data
 
-LOG = logging.getLogger(f'data_fetch')
+LOG = logging.getLogger('data_fetch')
 
 
 def set_up_python_logging(debug=False,
@@ -61,7 +61,7 @@ def process_fetched_data(recent_data, session=SESSION()):
     return recent_data
 
 
-def fetch_recent_data(pi_id, query_time, session=SESSION(), port=5002):
+def fetch_recent_data(pi_id, query_time, session=SESSION(), port=5003):
     """
     Get all data since query_time from a raspberry pi identified by pi_id
     Returns a pandas dataframe
