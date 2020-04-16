@@ -1,10 +1,14 @@
 """Console script for homesweetpi."""
 import argparse
 import sys
+import logging
+
+LOG = logging.getLogger("homesweetpi.cli")
 
 
 def main():
     """Console script for homesweetpi."""
+    LOG.debug("Running CLI main script")
     parser = argparse.ArgumentParser()
     parser.add_argument('_', nargs='*')
     args = parser.parse_args()

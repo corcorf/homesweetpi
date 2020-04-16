@@ -2,11 +2,14 @@
 Module to retrieve data from the PostGresDB at a specified frequency
 """
 import json
+import logging
 import pandas as pd
 import altair as alt
 from homesweetpi.sql_tables import (get_last_n_days, resample_measurements,
                                     get_last_measurement_for_sensor,
                                     get_all_sensors, get_sensors_and_pis)
+
+LOG = logging.getLogger("homesweetpi.data_preparation")
 
 
 def create_selection(datetime_col="Time"):
@@ -95,6 +98,7 @@ def create_chart(chart_components,
     chart_components is a dictionary containing Altair chart components,
     eg lines, selectors, points, rules, text,
     """
+    LOG.debug("Creating Altair Chart object")
     chart = alt.layer(*chart_components.values(),
                       ).properties(
                           width=width, height=height
@@ -107,6 +111,7 @@ def format_chart(chart):
     Customise chart formatting
     return formatted chart instance
     """
+    LOG.debug("Formatting Altair Chart object")
     chart = chart.configure_title(fontSize=16,
                                   color='darkgray',
                                   anchor="start",
@@ -125,6 +130,7 @@ def create_altair_plot(source, datetime_col='Time', logger_col='Location',
     """
     Return an interactive altair chart object from the source data
     """
+    LOG.debug("Creating Altair Chart components")
     nearest = create_selection()
     lines = create_lines(source, datetime_col, logger_col)
     chart_components = dict(
@@ -148,6 +154,7 @@ def prepare_chart_data(logs, resample_freq='30T'):
     """
     Prepare the data for creation of the Altair plot
     """
+    LOG.debug("Preparing data for Altair Chart")
     source = resample_measurements(logs, resample_freq).round(1)
     lookup = get_sensors_and_pis().set_index("sensorid")['location']
     source['sensorid'] = source['sensorid'].apply(lookup.get)
@@ -167,6 +174,7 @@ def rewrite_chart(n_days=5, resample_freq='30T',
     """
     create an altair chart with data from the last n days and save as json
     """
+    LOG.debug("Rewriting Altair Chart object")
     title = f"Readings from the last {n_days} days:"
     logs = get_last_n_days(n_days)
     source = prepare_chart_data(logs, resample_freq)
@@ -178,6 +186,7 @@ def get_most_recent_readings():
     """
     Return a json containing the most recent readings for all sensors
     """
+    LOG.debug("Requesting most recent readings")
     recent_readings = {}
     for sensor in get_all_sensors():
         measurement = get_last_measurement_for_sensor(sensor)
@@ -191,6 +200,7 @@ def recent_readings_as_html():
     Convert json of latest sensor results to html for rending
     """
     readings = pd.read_json(get_most_recent_readings()).T
+    LOG.debug("Converting most recent readings to html")
     readings = readings.rename(columns={
         "strftime": "Time", "sensorid": "Sensor ID",
         "sensorlocation": "Location",

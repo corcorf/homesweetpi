@@ -2,7 +2,6 @@
 Module for retrieving data from raspberry pi apis
 """
 
-import os
 import logging
 import json
 import time
@@ -13,27 +12,7 @@ from homesweetpi.sql_tables import get_ip_addr, get_sensors_on_pi,\
                                    get_last_time, SESSION
 from homesweetpi.sql_tables import get_pi_ids, save_recent_data
 
-LOG = logging.getLogger('data_fetch')
-
-
-def set_up_python_logging(debug=False,
-                          log_filename="homesweetpi.log",
-                          log_path=""):
-    """
-    Set up the python logging module
-    """
-    log_filename = os.path.join(log_path, log_filename)
-    handler = logging.FileHandler(log_filename, mode='a')
-    fmt = '%(asctime)s %(message)s'
-    datefmt = '%Y/%m/%d %H:%M:%S'
-    handler.setFormatter(logging.Formatter(fmt, datefmt=datefmt))
-    LOG.addHandler(handler)
-    if debug:
-        # logging.basicConfig(filename=filename, level=logging.DEBUG)
-        LOG.setLevel(logging.DEBUG)
-    else:
-        # logging.basicConfig(filename=filename, level=logging.INFO)
-        LOG.setLevel(logging.INFO)
+LOG = logging.getLogger("homesweetpi.data_retrieval")
 
 
 def process_fetched_data(recent_data, session=SESSION()):
@@ -90,14 +69,13 @@ def round_up_seconds(datetime_):
     """
     Round up at datetime instance to the next second and return
     """
+    LOG.debug("Rounding datetime instance to nearest second")
     rounded = (datetime_.year, datetime_.month, datetime_.day, datetime_.hour,
                datetime_.minute, datetime_.second)
     return datetime(*rounded) + timedelta(seconds=1)
 
 
 if __name__ == "__main__":
-    set_up_python_logging(debug=True, log_filename="data_retrieval.log",
-                          log_path="")
     LOG.debug("fetching pi ids")
     IDS = get_pi_ids()
     LOG.debug("pi ids %s", IDS)

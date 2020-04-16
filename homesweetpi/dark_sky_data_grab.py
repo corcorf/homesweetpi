@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import requests
 import pandas as pd
 
-logging.basicConfig(level=logging.DEBUG)
+LOG = logging.getLogger("homesweetpi.dark_sky_data_grab")
 
 SECRET_KEY = os.getenv("DARKSKYKEY")
 LOCATION = "TempelhoferFeld"
@@ -26,7 +26,7 @@ def get_weather_data(time_string):
     '''
     url_stem = 'https://api.darksky.net/forecast/{}/{},{},{}?units=si'
     url = url_stem.format(SECRET_KEY, LATITUDE, LONGITUDE, time_string)
-    logging.debug("requesting data for url %s", url)
+    LOG.debug("requesting data for url %s", url)
     response = requests.get(url)
     return response.json()
 
@@ -38,7 +38,7 @@ def dump_to_json(json_obj, time_string, location=LOCATION, path=PATH,
     """
     filename = filename_template.format(location, time_string.replace(':', ''))
     filename = os.path.join(path, filename)
-    logging.debug("dumping json for time_string %s", time_string)
+    LOG.debug("dumping json for time_string %s", time_string)
     with open(filename, 'w') as filepath:
         json.dump(json_obj, filepath)
 
@@ -49,7 +49,7 @@ def convert_to_df(weather_data, level='hourly', timezone=TIMEZONE):
     level
     Return a Pandas DataFrame
     """
-    logging.debug("converting %s data to dataframe", level)
+    LOG.debug("converting %s data to dataframe", level)
     weather_data = pd.DataFrame(weather_data[level]['data'])
     datetime_series = pd.to_datetime(weather_data['time'], unit='s')
     weather_data['time'] = datetime_series.dt.tz_localize('UTC')\
@@ -67,7 +67,7 @@ def dump_jsons_for_date_range(date_range,
     time_strings = [dt.strftime('%Y-%m-%dT%H:%M:%S')
                     for dt in date_range]
     for time_t in time_strings:
-        logging.debug("requesting data for time_string %s", time_t)
+        LOG.debug("requesting data for time_string %s", time_t)
         weather_data = get_weather_data(time_t)
         dump_to_json(weather_data, time_t, location=location, path=path,
                      filename_template=filename_template)
@@ -82,7 +82,7 @@ def get_dfs_for_date_range(date_range, path=PATH, level='hourly',
                     for dt in date_range]
     list_of_dfs = []
     for time_t in time_strings:
-        logging.debug("requesting data for time_string %s", time_t)
+        LOG.debug("requesting data for time_string %s", time_t)
         weather_data = get_weather_data(time_t)
         if dump_json:
             dump_to_json(weather_data, time_t, location=location, path=path,

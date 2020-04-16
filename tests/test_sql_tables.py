@@ -7,6 +7,7 @@ Creates an SQLite db instead of the usual PostGres
 
 import os
 import pytest
+import logging
 from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
@@ -18,6 +19,8 @@ from homesweetpi.sql_tables import create_tables, load_sensor_and_pi_info,\
                                    one_or_more_results, Measurement,\
                                    get_measurements_since, get_last_n_days
 from homesweetpi.retrieve_data import process_fetched_data
+
+LOG = logging.getLogger("homesweetpi.test_sql_tables")
 
 TEST_TIME = datetime.now()
 TEST_DB_PATH = os.getcwd()
@@ -56,13 +59,15 @@ def test_add_pi_info():
     pi_names_from_db = get_pi_names(session=SESSION())
     pi_names_from_db.sort()
     assert isinstance(pi_names_from_db, np.ndarray)
-    pi_names_from_file = PI_INFO['name'].values
+    pi_names_from_file = PI_INFO['name'].unique()
     pi_names_from_file.sort()
+    LOG.debug("Pi names from file: %s", pi_names_from_file)
     assert np.all(pi_names_from_db == pi_names_from_file)
     sensor_locations_from_db = get_sensor_locations(session=SESSION())
     assert isinstance(sensor_locations_from_db, np.ndarray)
-    sensor_locations_from_file = SENSOR_CONFIG['location'].values
+    sensor_locations_from_file = SENSOR_CONFIG['location'].unique()
     sensor_locations_from_file.sort()
+    LOG.debug("Sensor location from file: %s", sensor_locations_from_file)
     assert np.all(sensor_locations_from_db == sensor_locations_from_file)
 
 

@@ -17,7 +17,7 @@ app = Flask("homesweetpi")
 api = Api(app)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-logging.basicConfig(filename='homesweetpi_api.log', level=logging.DEBUG)
+LOG = logging.getLogger("homesweetpi.api_server")
 
 
 class GetLast(Resource):
@@ -29,6 +29,7 @@ class GetLast(Resource):
         """
         Return a JSON with the most recent readings for each sensor in DB
         """
+        LOG.info("GetLast triggered")
         return get_most_recent_readings()
 
 
@@ -37,6 +38,7 @@ def main_page():
     """
     Pass table of latest sensor readings as context for main_page
     """
+    LOG.info("Main Page triggered")
     context = dict(
         sub_title="Latest readings:",
         table=recent_readings_as_html()
@@ -49,6 +51,7 @@ def charts():
     """
     Update Altair chart of sensor readings and pass as context to chart page
     """
+    LOG.info("Chart page triggered")
     max_days = 100
     default_days = 7
     n_days = request.args.get('n_days', default=default_days, type=int)
@@ -69,4 +72,5 @@ def charts():
 api.add_resource(GetLast, '/get_last')
 
 if __name__ == '__main__':
+    LOG.debug("Running api_server as __main__")
     app.run(host='0.0.0.0', port='5002', debug=False)
