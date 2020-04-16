@@ -3,3 +3,5 @@ id,location,name,type,pin,piid
 1,piano,catflap,dht22,24,100000003d12f229
 2,bedroom,beret,bme680,0,0000000058d9da69
 3,front,beret,dht22,4,0000000058d9da69
+4,livingroom,ripple,dht22,4,10000000a0b67fa8
+5,piano,ripple,dht22,24,10000000a0b67fa8

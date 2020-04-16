@@ -8,3 +8,4 @@ flask-restful
 altair
 python-dotenv
 pylint
+requests

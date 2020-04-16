@@ -9,6 +9,7 @@ import logging
 from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 import sqlalchemy
 from sqlalchemy import create_engine, distinct
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Float
@@ -16,6 +17,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.inspection import inspect
+
+load_dotenv()
 
 HOST = os.getenv('POSTGRES_SERVER_ADDRESS')
 PORT = '5432'

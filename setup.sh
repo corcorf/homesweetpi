@@ -4,7 +4,9 @@
 if [ ! -e data_retrieval_service_set_up_complete ]
 then
   # set up logging as a service
-  echo "copying logger.service to  /etc/systemd/system/"
+  echo "creating data_retrieval.service"
+  source data_retrieval.service.sh > data_retrieval.service
+  echo "copying data_retrieval.service to  /etc/systemd/system/"
   cp data_retrieval.service /etc/systemd/system/data_retrieval.service
   echo "reloading systemd daemon and enabling service"
   systemctl daemon-reload
@@ -18,5 +20,5 @@ if [ ! -e env ]
 then
   python3 -m venv env
   source env/bin/activate
-  pip3 install -r requirements.txt
+  pip3 install -e .
 fi
