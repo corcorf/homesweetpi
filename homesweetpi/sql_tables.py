@@ -365,6 +365,7 @@ def save_recent_data(recent_data, table_name="measurements", engine=ENGINE):
     send a pandas DataFrame of readings pulled from the pi_logger api to SQL
     """
     LOG.debug("Attempting to save data to table %s", table_name)
+    LOG.debug("Data to save is %s", recent_data)
     try:
         recent_data.to_sql(table_name, engine, index=False,
                            if_exists="append")

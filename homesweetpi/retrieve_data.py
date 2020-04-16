@@ -61,7 +61,7 @@ def fetch_recent_data(pi_id, query_time, session=SESSION(), port=5003):
         recent_data = process_fetched_data(recent_data, session)
         return recent_data
 
-    LOG.debug("contents of json: %s", recent_data)
+    LOG.debug("contents of json: %s. Returning None", recent_data)
     return None
 
 
@@ -89,10 +89,10 @@ if __name__ == "__main__":
             LOG.debug("fetching data for pi %s since time %s", piid, qtime)
             recentdata = fetch_recent_data(piid, qtime)
             if recentdata is None:
-                LOG.debug("No data to pass to sql")
+                LOG.debug("No data to pass to sql: %s", recentdata)
             else:
-                LOG.debug("saving fetched data to db")
-            if not save_recent_data(recentdata):
-                LOG.warning("Error saving  pi %s from %s",
-                            piid, qtime)
+                LOG.debug("saving fetched data to db: %s", recentdata)
+                if not save_recent_data(recentdata):
+                    LOG.warning("Error saving  pi %s from %s",
+                                piid, qtime)
         time.sleep(FREQ)
