@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # check to see if this has been done already
 if [ ! -e data_retrieval_service_set_up_complete ]
@@ -16,9 +16,3 @@ then
   touch data_retrieval_service_set_up_complete
 fi
 
-if [ ! -e env ]
-then
-  python3 -m venv env
-  source env/bin/activate
-  pip3 install -e .
-fi
