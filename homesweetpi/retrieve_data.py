@@ -75,14 +75,20 @@ def round_up_seconds(datetime_):
     return datetime(*rounded) + timedelta(seconds=1)
 
 
-if __name__ == "__main__":
+def run_data_retrieval_loop(freq=300):
+    """
+    Data retrieval main function.
+    Attempts to retrieve data from each pi included in database at the
+    specified frequency
+    Parameters:
+        freq (int): the data retrieval frequency in seconds
+    """
     LOG.debug("fetching pi ids")
-    IDS = get_pi_ids()
-    LOG.debug("pi ids %s", IDS)
-    FREQ = 300
-    LOG.debug("fetch frequency set to %s seconds", FREQ)
+    ids = get_pi_ids()
+    LOG.debug("pi ids %s", ids)
+    LOG.debug("fetch frequency set to %s seconds", freq)
     while True:
-        for piid in IDS:
+        for piid in ids:
             qtime = get_last_time(piid)
             LOG.debug("most recent record in db for pi %s at %s", piid, qtime)
             qtime = round_up_seconds(qtime)
@@ -95,4 +101,8 @@ if __name__ == "__main__":
                 if not save_recent_data(recentdata):
                     LOG.warning("Error saving  pi %s from %s",
                                 piid, qtime)
-        time.sleep(FREQ)
+        time.sleep(freq)
+
+
+if __name__ == "__main__":
+    run_data_retrieval_loop(freq=300)
