@@ -91,6 +91,8 @@ class Measurement(BASE):
         humidity (Float)
         pressure (Float)
         gasvoc (Float)
+        mcdvalue (Integer)
+        mcdvoltage (Float)
     """
     __tablename__ = 'measurements'
 
@@ -100,6 +102,8 @@ class Measurement(BASE):
     humidity = Column(Float)
     pressure = Column(Float)
     gasvoc = Column(Float)
+    mcdvalue = Column(Integer)
+    mcdvoltage = Column(Float)
 
     sensor = relationship('Sensor', back_populates="measurements")
 
@@ -122,6 +126,8 @@ class Measurement(BASE):
             humidity=self.humidity,
             pressure=self.pressure,
             gasvoc=self.gasvoc,
+            mcdvalue=self.mcdvalue,
+            mcdvoltage=self.mcdvoltage,
         )
         return data
 
