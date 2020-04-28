@@ -4,6 +4,8 @@
 if [ ! -e api_service_set_up_complete ]
 then
   # set up logging as a service
+  echo "Creating homesweetpi.service from homesweetpi.service.sh"
+  source homesweetpi.service.sh > homesweetpi.service
   echo "copying homesweetpi.service to  /etc/systemd/system/"
   cp homesweetpi.service /etc/systemd/system/homesweetpi.service
   echo "reloading systemd daemon and enabling service"
