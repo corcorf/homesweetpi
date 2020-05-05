@@ -36,6 +36,7 @@ def process_fetched_data(recent_data, session=SESSION()):
     LOG.debug("shape of fetched data after merge is %s", recent_data.shape)
     recent_data = recent_data.drop_duplicates(subset=['datetime',
                                                       'sensorid'])
+    recent_data = recent_data.drop(['id'], axis=1)
     LOG.debug("shape of data after drop duplicates %s", recent_data.shape)
     return recent_data
 
