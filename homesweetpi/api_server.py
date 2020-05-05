@@ -68,7 +68,7 @@ def charts():
     ]
     chart_filename = "altair_chart_recent_data.json"
     rewrite_chart(
-        n_days, rows, resample_freq,
+        rows, n_days, resample_freq,
         filename=f"homesweetpi/static/{chart_filename}"
     )
     context = dict(
