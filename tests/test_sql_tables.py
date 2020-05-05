@@ -35,15 +35,18 @@ SENSOR_FILE = "logger_config.csv"
 PI_INFO = pd.read_csv(PI_FILE)
 SENSOR_CONFIG = pd.read_csv(SENSOR_FILE)
 
-SAMPLE_JSON = "{\"datetime\":{\"0\":%s,\"1\":%s},\
-\"location\":{\"0\":\"livingroom\",\"1\":\"piano\"},\
-\"sensortype\":{\"0\":\"dht22\",\"1\":\"dht22\"},\
-\"piname\":{\"0\":\"catflap\",\"1\":\"catflap\"},\
-\"piid\":{\"0\":\"100000003d12f229\",\"1\":\"100000003d12f229\"},\
-\"temp\":{\"0\":19.0,\"1\":19.1000003815},\
-\"humidity\":{\"0\":51.9000015259,\"1\":51.0999984741},\
-\"pressure\":{\"0\":null,\"1\":null},\
-\"gasvoc\":{\"0\":null,\"1\":null}}" \
+SAMPLE_JSON = '{"id": {"0": 101, "1": 102}, \
+"datetime": {"0": %s, "1": %s}, \
+"location": {"0": "bay", "1": "allo"}, \
+"sensortype": {"0": "MCP", "1": "MCP"}, \
+"piname": {"0": "catflap", "1": "catflap"}, \
+"piid": {"0": "100000003d12f229", "1": "100000003d12f229"}, \
+"temp": {"0": null, "1": null}, \
+"humidity": {"0": null, "1": null}, \
+"pressure": {"0": null, "1": null}, \
+"gasvoc": {"0": null, "1": null}, \
+"mcdvalue": {"0": 64576, "1": 22976}, \
+"mcdvoltage": {"0": 3.2517097734, "1": 1.1601739528}}'\
 % (round(TEST_TIME.timestamp()*1000), round(TEST_TIME.timestamp()*1000))
 
 
