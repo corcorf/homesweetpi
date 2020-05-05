@@ -33,6 +33,20 @@ class GetLast(Resource):
         return get_most_recent_readings()
 
 
+def get_n_days_to_display():
+    """
+    Get the number of days that will be displayed on the chart
+    """
+    max_days = 100
+    default_days = 7
+    n_days = request.args.get('n_days', default=default_days, type=int)
+    try:
+        n_days = int(n_days)
+        return min(n_days, max_days)
+    except (ValueError, TypeError):
+        return default_days
+
+
 @app.route('/')
 def main_page():
     """
@@ -52,14 +66,7 @@ def charts():
     Update Altair chart of sensor readings and pass as context to chart page
     """
     LOG.info("Chart page triggered")
-    max_days = 100
-    default_days = 7
-    n_days = request.args.get('n_days', default=default_days, type=int)
-    try:
-        n_days = int(n_days)
-        n_days = min(n_days, max_days)
-    except (ValueError, TypeError):
-        n_days = default_days
+    n_days = get_n_days_to_display()
     resample_freq = '30T'
     rows = [
         "Temperature (°C)", 'Relative Humidity (%)',
@@ -67,6 +74,55 @@ def charts():
         "Soil Moisture Value", "Soil Moisture (V)"
     ]
     chart_filename = "altair_chart_recent_data.json"
+    rewrite_chart(
+        rows, n_days, resample_freq,
+        filename=f"homesweetpi/static/{chart_filename}"
+    )
+    context = dict(
+        sub_title=f"Readings for the last {n_days} days",
+        chart_filename=f"\"static/{chart_filename}\""
+    )
+    return render_template('charts.html', **context)
+
+
+@app.route('/air_charts')
+def air_charts():
+    """
+    Update Altair chart of air quality readings and pass as context to chart
+    page
+    """
+    LOG.info("Air chart page triggered")
+    n_days = get_n_days_to_display()
+    resample_freq = '30T'
+    rows = [
+        "Temperature (°C)", 'Relative Humidity (%)',
+        'Pressure (hPa)', 'Gas Resistance (Ω)',
+    ]
+    chart_filename = "altair_chart_atmopheric_data.json"
+    rewrite_chart(
+        rows, n_days, resample_freq,
+        filename=f"homesweetpi/static/{chart_filename}"
+    )
+    context = dict(
+        sub_title=f"Readings for the last {n_days} days",
+        chart_filename=f"\"static/{chart_filename}\""
+    )
+    return render_template('charts.html', **context)
+
+
+@app.route('/plant_charts')
+def plant_charts():
+    """
+    Update Altair chart of soil moisture readings and pass as context to chart
+    page
+    """
+    LOG.info("Plant chart page triggered")
+    n_days = get_n_days_to_display()
+    resample_freq = '30T'
+    rows = [
+        "Soil Moisture Value", "Soil Moisture (V)"
+    ]
+    chart_filename = "altair_chart_soil_moisture_data.json"
     rewrite_chart(
         rows, n_days, resample_freq,
         filename=f"homesweetpi/static/{chart_filename}"
