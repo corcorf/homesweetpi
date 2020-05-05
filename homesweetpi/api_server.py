@@ -73,7 +73,7 @@ def charts():
     )
     context = dict(
         sub_title=f"Readings for the last {n_days} days",
-        chart_filename=f"static/{chart_filename}"
+        chart_filename=f"\"static/{chart_filename}\""
     )
     return render_template('charts.html', **context)
 

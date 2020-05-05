@@ -155,7 +155,7 @@ def prepare_chart_data(logs, resample_freq='30T'):
     source = resample_measurements(logs, resample_freq).round(1)
     lookup = get_sensors_and_pis().set_index("sensorid")['location']
     source['sensorid'] = source['sensorid'].apply(lookup.get)
-    source = source.rename(Measurement().get_fancy_names_dict())
+    source = source.rename(columns=Measurement().get_fancy_names_dict())
     return source
 
 
