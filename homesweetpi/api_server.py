@@ -61,10 +61,19 @@ def charts():
     except (ValueError, TypeError):
         n_days = default_days
     resample_freq = '30T'
-    rewrite_chart(n_days, resample_freq)
+    rows = [
+        "Temperature (°C)", 'Relative Humidity (%)',
+        'Pressure (hPa)', 'Gas Resistance (Ω)',
+        "Soil Moisture Value", "Soil Moisture (V)"
+    ]
+    chart_filename = "altair_chart_recent_data.json"
+    rewrite_chart(
+        n_days, rows, resample_freq,
+        filename=f"homesweetpi/static/{chart_filename}"
+    )
     context = dict(
         sub_title=f"Readings for the last {n_days} days",
-
+        chart_filename=f"static/{chart_filename}"
     )
     return render_template('charts.html', **context)
 

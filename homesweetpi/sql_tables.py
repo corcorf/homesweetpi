@@ -110,6 +110,17 @@ class Measurement(BASE):
 
     sensor = relationship('Sensor', back_populates="measurements")
 
+    fancy_names_dict = {
+        "datetime": "Time",
+        "temp": "Temperature (°C)",
+        "humidity": "Relative Humidity (%)",
+        "pressure": "Pressure (hPa)",
+        "gasvoc": "Gas Resistance (Ω)",
+        "sensorid": "Location",
+        "mcdvalue": "Soil Moisture Value",
+        "mcdvoltage": "Soil Moisture (V)",
+    }
+
     def __repr__(self):
         info = (self.sensorid, self.datetime)
         return "<Measurement(sensor={}, datetime={})>".format(*info)
@@ -133,6 +144,13 @@ class Measurement(BASE):
             mcdvoltage=self.mcdvoltage,
         )
         return data
+
+    def get_fancy_names_dict(self):
+        """
+        Return a dictionary mapping the column names to nicer formatted names
+        for presentaion
+        """
+        return self.fancy_names_dict
 
 
 def create_tables(engine=ENGINE):

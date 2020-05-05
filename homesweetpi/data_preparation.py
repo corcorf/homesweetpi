@@ -7,7 +7,8 @@ import pandas as pd
 import altair as alt
 from homesweetpi.sql_tables import (get_last_n_days, resample_measurements,
                                     get_last_measurement_for_sensor,
-                                    get_all_sensors, get_sensors_and_pis)
+                                    get_all_sensors, get_sensors_and_pis,
+                                    Measurement)
 
 LOG = logging.getLogger("homesweetpi.data_preparation")
 
@@ -125,8 +126,8 @@ def format_chart(chart):
     return chart
 
 
-def create_altair_plot(source, datetime_col='Time', logger_col='Location',
-                       title="HomeSweetPi Data"):
+def create_altair_plot(source, rows, datetime_col='Time',
+                       logger_col='Location', title="HomeSweetPi Data"):
     """
     Return an interactive altair chart object from the source data
     """
@@ -140,11 +141,6 @@ def create_altair_plot(source, datetime_col='Time', logger_col='Location',
         text=create_text(lines, nearest),
         rules=create_rules(source, nearest, datetime_col),
     )
-    rows = [
-        "Temperature (°C)", 'Relative Humidity (%)',
-        'Pressure (hPa)', 'Gas Resistance (Ω)',
-        "Soil Moisture Value", "Soil Moisture (V)"
-    ]
     chart = create_chart(chart_components, rows, 600, 200
                          ).properties(title=title)
     chart = format_chart(chart)
@@ -159,20 +155,11 @@ def prepare_chart_data(logs, resample_freq='30T'):
     source = resample_measurements(logs, resample_freq).round(1)
     lookup = get_sensors_and_pis().set_index("sensorid")['location']
     source['sensorid'] = source['sensorid'].apply(lookup.get)
-    source = source.rename(columns={
-        "datetime": "Time",
-        "temp": "Temperature (°C)",
-        "humidity": "Relative Humidity (%)",
-        "pressure": "Pressure (hPa)",
-        "gasvoc": "Gas Resistance (Ω)",
-        "sensorid": "Location",
-        "mcdvalue": "Soil Moisture Value",
-        "mcdvoltage": "Soil Moisture (V)",
-    })
+    source = source.rename(Measurement().get_fancy_names_dict())
     return source
 
 
-def rewrite_chart(n_days=5, resample_freq='30T',
+def rewrite_chart(rows, n_days=5, resample_freq='30T',
                   filename="homesweetpi/static/altair_chart_recent_data.json"):
     """
     create an altair chart with data from the last n days and save as json
@@ -181,7 +168,7 @@ def rewrite_chart(n_days=5, resample_freq='30T',
     title = f"Readings from the last {n_days} days:"
     logs = get_last_n_days(n_days)
     source = prepare_chart_data(logs, resample_freq)
-    chart = create_altair_plot(source, title=title)
+    chart = create_altair_plot(source, rows, title=title)
     chart.save(filename)
 
 
