@@ -53,7 +53,7 @@ def fetch_recent_data(pi_id, query_time, session=SESSION(), port=5003):
         response = requests.get(url)
         recent_data = response.json()
         LOG.debug("recieved json with length %s", len(recent_data))
-    except ConnectionError as error:
+    except (ConnectionError, ConnectionRefusedError) as error:
         LOG.debug("ConnectionError from %s: %s", ipaddr, error)
         msg = f'{{"message": "Could not connect to {ipaddr}"}}'
         recent_data = json.loads(msg)

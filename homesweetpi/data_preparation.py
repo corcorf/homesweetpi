@@ -182,41 +182,45 @@ def rewrite_chart(n_days=5, resample_freq='30T',
     chart.save(filename)
 
 
-def get_most_recent_readings():
+def get_most_recent_readings(current_only=False):
     """
     Return a json containing the most recent readings for all sensors
     """
     LOG.debug("Requesting most recent readings")
     recent_readings = {}
-    for sensor in get_all_sensors():
+    for sensor in get_all_sensors(current_only=current_only):
         measurement = get_last_measurement_for_sensor(sensor)
         measurement.pop("datetime")
         recent_readings[sensor] = measurement
     return json.dumps(recent_readings)
 
 
-def recent_readings_as_html():
+def recent_readings_as_html(current_only=True):
     """
     Convert json of latest sensor results to html for rending
     """
-    readings = pd.read_json(get_most_recent_readings()).T
+    readings = pd.read_json(
+        get_most_recent_readings(current_only=current_only)
+    ).T
     LOG.debug("Converting most recent readings to html")
     readings = readings.rename(columns={
         "strftime": "Time", "sensorid": "Sensor ID",
         "sensorlocation": "Location",
         "temp": "Temperature (°C)", "humidity": "Humidity (%)",
         "pressure": "Pressure (hPa)", "gasvoc": "Gas Resistance (Ω)",
-        "piname": "Pi",
+        "piname": "Pi", "mcdvalue": "Soil Moisture Value",
+        "mcdvoltage": "Soil Moisture (V)"
     })
     readings['Time'] = pd.to_datetime(readings['Time'])
     readings = readings.astype({
         "Temperature (°C)": float, "Humidity (%)": float,
-        "Pressure (hPa)": float, "Gas Resistance (Ω)": float
+        "Pressure (hPa)": float, "Gas Resistance (Ω)": float,
+        "Soil Moisture Value": float, "Soil Moisture (V)": float,
     })
     readings = readings.round(1)
     cols = [
         "Time", "Location", "Temperature (°C)", "Humidity (%)",
-        "Pressure (hPa)", "Gas Resistance (Ω)"
+        "Pressure (hPa)", "Gas Resistance (Ω)", "Soil Moisture (V)"
     ]
     table = readings.to_html(
         columns=cols, index=False, justify='left',

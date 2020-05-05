@@ -12,7 +12,8 @@ import pandas as pd
 from dotenv import load_dotenv
 import sqlalchemy
 from sqlalchemy import create_engine, distinct
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Float
+from sqlalchemy import (Column, ForeignKey,
+                        Integer, String, DateTime, Float, Boolean)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
@@ -64,6 +65,7 @@ class Sensor(BASE):
         type (String)
         pin (Integer)
         piid (String)
+        current (Boolean)
     """
     __tablename__ = 'sensors'
     id = Column(Integer, primary_key=True)
@@ -71,13 +73,14 @@ class Sensor(BASE):
     type = Column(String, nullable=False)
     pin = Column(Integer)
     piid = Column(String, ForeignKey('raspberrypis.id'))
+    current = Column(Boolean)
 
     raspberrypi = relationship('RaspberryPi', back_populates="sensors")
     measurements = relationship('Measurement', back_populates="sensor")
 
     def __repr__(self):
-        info = (self.id, self.location, self.type)
-        return "<Sensor(id={}, location={}, type={})>".format(*info)
+        info = (self.id, self.location, self.type, self.current)
+        return "<Sensor(id={}, location={}, type={}, active={})>".format(*info)
 
 
 class Measurement(BASE):
@@ -215,12 +218,16 @@ def get_sensor_locations(session=SESSION()):
     return result
 
 
-def get_all_sensors(session=SESSION()):
+def get_all_sensors(session=SESSION(), current_only=False):
     """
     Return an array of unique sensor names
+    If current_only set to True, return only active sensors
     """
     LOG.debug("Querying sensor names")
-    query = session.query(Sensor).subquery()
+    if current_only:
+        query = session.query(Sensor).filter_by(current=True).subquery()
+    else:
+        query = session.query(Sensor).subquery()
     result = session.query(distinct(query.c.id)).all()
     result = np.array(result).reshape(-1).astype(str)
     result.sort()
