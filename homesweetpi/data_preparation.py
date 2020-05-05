@@ -142,7 +142,8 @@ def create_altair_plot(source, datetime_col='Time', logger_col='Location',
     )
     rows = [
         "Temperature (°C)", 'Relative Humidity (%)',
-        'Pressure (hPa)', 'Gas Resistance (Ω)'
+        'Pressure (hPa)', 'Gas Resistance (Ω)',
+        "Soil Moisture Value", "Soil Moisture (V)"
     ]
     chart = create_chart(chart_components, rows, 600, 200
                          ).properties(title=title)
@@ -164,7 +165,9 @@ def prepare_chart_data(logs, resample_freq='30T'):
         "humidity": "Relative Humidity (%)",
         "pressure": "Pressure (hPa)",
         "gasvoc": "Gas Resistance (Ω)",
-        "sensorid": "Location"
+        "sensorid": "Location",
+        "mcdvalue": "Soil Moisture Value",
+        "mcdvoltage": "Soil Moisture (V)",
     })
     return source
 
@@ -223,7 +226,7 @@ def recent_readings_as_html(current_only=True):
         "Pressure (hPa)", "Gas Resistance (Ω)", "Soil Moisture (V)"
     ]
     table = readings.to_html(
-        columns=cols, index=False, justify='left',
+        columns=cols, index=False, justify='left', na_rep='-',
         classes="table", table_id="latest_results"
     )
     return table
