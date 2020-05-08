@@ -3,9 +3,13 @@
 # check to see if this has been done already
 if [ ! -e data_retrieval_service_set_up_complete ]
 then
+  service_name=data_retrieval
+  unit_file=$service_name.service
+  timer_file=$service_name.timer
+  service_path=/etc/systemd/system/
   # set up logging as a service
-  echo "Creating data_retrieval.service in /etc/systemd/system/"
-  cat > /etc/systemd/system/data_retrieval.service << EOF
+  echo "creating $unit_file in $service_path"
+  cat > $service_path$unit_file << EOF
 [Unit]
 Description=Retrieve data from pis and add to postgres db
 After=multi-user.target
@@ -18,13 +22,14 @@ ExecStart=$PWD/env/bin/python3 homesweetpi/retrieve_data.py
 [Install]
 WantedBy=multi-user.target
 EOF
-  cat > /etc/systemd/system/data_retrieval.timer << EOF
+  echo "Creating $timer_file in $service_path"
+  cat > $service_path$timer_file << EOF
 [Unit]
 Description=Schedule retrieval of data from pis
 
 [Timer]
 OnCalendar=*-*-* *:00/5:00
-Unit=data_retrieval.service
+Unit=$unit_file
 
 [Install]
 WantedBy=multi-user.target
