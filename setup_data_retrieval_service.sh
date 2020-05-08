@@ -18,6 +18,17 @@ ExecStart=$PWD/env/bin/python3 homesweetpi/retrieve_data.py
 [Install]
 WantedBy=multi-user.target
 EOF
+  cat > /etc/systemd/system/data_retrieval.timer << EOF
+[Unit]
+Description=Schedule retrieval of data from pis
+
+[Timer]
+OnCalendar=*-*-* *:00/5:00
+Unit=data_retrieval.service
+
+[Install]
+WantedBy=multi-user.target
+EOF
   echo "reloading systemd daemon and enabling service"
   systemctl daemon-reload
   systemctl start data_retrieval.service

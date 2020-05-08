@@ -75,9 +75,31 @@ def round_up_seconds(datetime_):
     return datetime(*rounded) + timedelta(seconds=1)
 
 
-def run_data_retrieval_loop(freq=300):
+def retrieve_data(pi_ids):
     """
     Data retrieval main function.
+    Attempts to retrieve data from each pi included in database
+    Parameters:
+        pi_ids (list-like): list or array of pi id numbers
+    """
+    LOG.debug("starting data retrieval round")
+    for piid in pi_ids:
+        qtime = get_last_time(piid)
+        LOG.debug("most recent record in db for pi %s at %s", piid, qtime)
+        qtime = round_up_seconds(qtime)
+        LOG.debug("fetching data for pi %s since time %s", piid, qtime)
+        recentdata = fetch_recent_data(piid, qtime)
+        if recentdata is None:
+            LOG.debug("No data to pass to sql: %s", recentdata)
+        else:
+            LOG.debug("saving fetched data to db: %s", recentdata)
+            if not save_recent_data(recentdata):
+                LOG.warning("Error saving  pi %s from %s",
+                            piid, qtime)
+
+
+def run_data_retrieval_loop(freq=300):
+    """
     Attempts to retrieve data from each pi included in database at the
     specified frequency
     Parameters:
@@ -88,21 +110,12 @@ def run_data_retrieval_loop(freq=300):
     LOG.debug("pi ids %s", ids)
     LOG.debug("fetch frequency set to %s seconds", freq)
     while True:
-        for piid in ids:
-            qtime = get_last_time(piid)
-            LOG.debug("most recent record in db for pi %s at %s", piid, qtime)
-            qtime = round_up_seconds(qtime)
-            LOG.debug("fetching data for pi %s since time %s", piid, qtime)
-            recentdata = fetch_recent_data(piid, qtime)
-            if recentdata is None:
-                LOG.debug("No data to pass to sql: %s", recentdata)
-            else:
-                LOG.debug("saving fetched data to db: %s", recentdata)
-                if not save_recent_data(recentdata):
-                    LOG.warning("Error saving  pi %s from %s",
-                                piid, qtime)
+        retrieve_data(ids)
         time.sleep(freq)
 
 
 if __name__ == "__main__":
-    run_data_retrieval_loop(freq=300)
+    LOG.debug("fetching pi ids")
+    PI_IDS = get_pi_ids()
+    LOG.debug("pi ids %s", PI_IDS)
+    retrieve_data(pi_ids=PI_IDS)
