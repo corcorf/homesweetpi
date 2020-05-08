@@ -28,7 +28,7 @@ EOF
 Description=Schedule retrieval of data from pis
 
 [Timer]
-OnCalendar=*-*-* *:00/5:00
+OnCalendar=*-*-* *:01/5:00
 Unit=$unit_file
 
 [Install]
