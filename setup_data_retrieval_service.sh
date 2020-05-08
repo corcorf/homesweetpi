@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # check to see if this has been done already
-if [ ! -e data_retrieval_service_set_up_complete ]
+flag=data_retrieval_service_set_up_complete
+if [ ! -e $flag ]
 then
   service_name=data_retrieval
   unit_file=$service_name.service
@@ -36,8 +37,8 @@ WantedBy=multi-user.target
 EOF
   echo "reloading systemd daemon and enabling service"
   systemctl daemon-reload
-  systemctl start data_retrieval.service
-  systemctl enable data_retrieval.service
-  echo "creating file 'data_retrieval_service_set_up_complete as flag"
-  touch data_retrieval_service_set_up_complete
+  systemctl start $timer_file
+  systemctl enable $timer_file
+  echo "creating file '$flag'' as flag"
+  touch $flag
 fi

@@ -1,11 +1,15 @@
 #! /bin/bash
 
 # check to see if this has been done already
-if [ ! -e api_service_set_up_complete ]
+flag=api_service_set_up_complete
+if [ ! -e $flag ]
 then
+  service_name=homesweetpi
+  unit_file=$service_name.service
+  service_path=/etc/systemd/system/
   # set up logging as a service
-  echo "Creating homesweetpi.service in /etc/systemd/system/"
-  cat > /etc/systemd/system/homesweetpi.service << EOF
+  echo "creating $unit_file in $service_path"
+  cat > $service_path$unit_file << EOF
 [Unit]
 Description=Run homesweetpi api server
 After=multi-user.target
@@ -20,8 +24,8 @@ WantedBy=multi-user.target
 EOF
   echo "reloading systemd daemon and enabling service"
   systemctl daemon-reload
-  systemctl start homesweetpi.service
-  systemctl enable homesweetpi.service
-  echo "creating file 'api_service_set_up_complete as flag"
-  touch api_service_set_up_complete
+  systemctl start $unit_file
+  systemctl enable $unit_file
+  echo "creating file '$flag' as flag"
+  touch $flag
 fi
