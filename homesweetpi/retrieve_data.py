@@ -7,6 +7,7 @@ import json
 import time
 from datetime import datetime, timedelta
 import requests
+from requests.exceptions import ConnectionError
 import pandas as pd
 from homesweetpi.sql_tables import get_ip_addr, get_sensors_on_pi,\
                                    get_last_time, SESSION
@@ -45,7 +46,7 @@ def fetch_recent_data(pi_id, query_time, session=SESSION(), port=5003):
     Get all data since query_time from a raspberry pi identified by pi_id
     Returns a pandas dataframe
     """
-    ipaddr = get_ip_addr(pi_id)
+    ipaddr = get_ip_addr(pi_id, session=session)
     strftime = query_time.strftime('%Y%m%d%H%M%S')
     url = f"http://{ipaddr}:{port}/get_recent/{strftime}"
     LOG.debug("fetching data from %s", url)
@@ -53,7 +54,7 @@ def fetch_recent_data(pi_id, query_time, session=SESSION(), port=5003):
         response = requests.get(url)
         recent_data = response.json()
         LOG.debug("recieved json with length %s", len(recent_data))
-    except (ConnectionError, ConnectionRefusedError) as error:
+    except (ConnectionError) as error:
         LOG.debug("ConnectionError from %s: %s", ipaddr, error)
         msg = f'{{"message": "Could not connect to {ipaddr}"}}'
         recent_data = json.loads(msg)
