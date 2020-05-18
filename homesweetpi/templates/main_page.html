@@ -20,10 +20,38 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-lite@4.0.2"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-embed@6"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>HomeSweetPi</h1>
 
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">HomeSweetPi</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link disabled" href="#" aria-disabled="true">Recent Readings <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/air_charts">Atmopheric Chart</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/plant_charts#">Plant Chart</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/charts">All Charts</a>
+      </li>
+<!--      <li class="nav-item">
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+      </li> -->
+    </ul>
+  </div>
+</nav>
+<body>
+  <div class="container-fluid">
+    <!-- <h1>HomeSweetPi</h1>
+    <p><a href="/air_charts">View atmopheric data charts</a> | <a href="/plant_charts">View plant moisture charts</a> | <a href="/charts">View all charts</a></p>
+-->
     <p class="sub_title">{{ sub_title }}</p>
 
     <!-- <table class="table" id="latest_results">
@@ -49,9 +77,6 @@
       {% endfor %}
     </table> -->
     {{ table|safe }}
-    <p><a href="/air_charts">View atmopheric data charts</a></p>
-    <p><a href="/plant_charts">View plant moisture charts</a></p>
-    <p><a href="/charts">View all charts</a></p>
 
     </div>
 
