@@ -20,9 +20,35 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-lite@4.0.2"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-embed@6"></script>
 </head>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="/">HomeSweetPi</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Recent Readings</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/air_charts">Atmospheric Chart</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/plant_charts#">Plant Chart</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/charts">All Charts</a>
+      </li>
+<!--      <li class="nav-item">
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+      </li> -->
+    </ul>
+  </div>
+</nav>
 <body>
   <div class="container-fluid">
-    <h1 class="page_title"><a href="/">HomeSweetPi</a></h1>
+    <!-- <h1 class="page_title"><a href="/">HomeSweetPi</a></h1> -->
     <div id="vis"></div>
       <script type="text/javascript">
         (function(vegaEmbed) {
@@ -33,10 +59,10 @@
 
       </script>
     <!-- <p><a href="/">Main Page</a></p> -->
-    <p><a href="/air_charts">View atmopheric data charts</a></p>
+    <!-- <p><a href="/air_charts">View atmopheric data charts</a></p>
     <p><a href="/plant_charts">View plant moisture charts</a></p>
     <p><a href="/charts">View all charts</a></p>
-    <p><a href="/">View latest readings</a></p>
+    <p><a href="/">View latest readings</a></p> -->
 
     </div>
 
