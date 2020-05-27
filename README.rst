@@ -9,8 +9,13 @@ HomeSweetPi
 
 This repository is part of an ongoing data-pipeline project to create a home
 environment monitoring system with python and a network of Raspberry Pis.
-The other part of the project can be found in my pi_logger_ repository. An
-overview of the project architecture is shown in the figure below:
+The other part of the project can be found in my pi_logger_ repository. 
+
+See it working live here_!
+
+.. _here: http://homesweetpi.duckdns.org:5002/air_charts
+
+An overview of the project architecture is shown in the figure below:
 
 .. image:: images/architecture_sketch.svg
 
