@@ -9,9 +9,12 @@ import logging
 from flask import Flask
 from flask import render_template, request
 from flask_restful import Resource, Api
+from dotenv import load_dotenv
 from homesweetpi.data_preparation import rewrite_chart,\
                                          recent_readings_as_html,\
                                          get_most_recent_readings
+
+load_dotenv()
 
 app = Flask("homesweetpi")
 api = Api(app)
