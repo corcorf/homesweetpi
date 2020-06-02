@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import OperationalError
 from homesweetpi.sql_tables import create_tables, load_sensor_and_pi_info,\
                                    get_pi_names, get_sensor_locations,\
                                    get_last_time, save_recent_data,\
@@ -56,35 +57,73 @@ def test_create_db():
     assert os.path.exists(TEST_DB_FILEPATH)
 
 
-def test_add_pi_info():
-    """add sensor info from file to test.db"""
+def test_db_connection_failure():
+    """Check an error is raised if connection to db fails"""
+    host = 'localhost'  # invalid ip address
+    port = '5432'
+    username = 'homesweetpi'
+    password = 'this_is_not_the_password'
+    db = 'homesweetpi'
+    conn_string = f'postgresql://{username}:{password}@{host}:{port}/{db}'
+    engine = create_engine(conn_string, echo=False)
+    pytest.raises(OperationalError, create_tables, engine)
+
+
+def test_load_sensor_and_pi_info():
+    """test loading sensor an pi info to test.db"""
     load_sensor_and_pi_info(PI_FILE, SENSOR_FILE, engine=ENGINE)
+
+
+def test_get_pi_names_returns_array():
+    """test that get_pi_names returns a numpy array"""
+    pi_names_from_db = get_pi_names(session=SESSION())
+    assert isinstance(pi_names_from_db, np.ndarray)
+
+
+def test_get_pi_names_returns_expected():
+    """test get_pi_names returns expected result"""
     pi_names_from_db = get_pi_names(session=SESSION())
     pi_names_from_db.sort()
-    assert isinstance(pi_names_from_db, np.ndarray)
     pi_names_from_file = PI_INFO['name'].unique()
     pi_names_from_file.sort()
     LOG.debug("Pi names from file: %s", pi_names_from_file)
     assert np.all(pi_names_from_db == pi_names_from_file)
+
+
+def test_get_sensor_locations_returns_array():
+    """test that get_sensor_locations returns a numpy array"""
     sensor_locations_from_db = get_sensor_locations(session=SESSION())
     assert isinstance(sensor_locations_from_db, np.ndarray)
+
+
+def test_get_sensor_locations_returns_expected():
+    """add sensor info from file to test.db"""
+    sensor_locations_from_db = get_sensor_locations(session=SESSION())
     sensor_locations_from_file = SENSOR_CONFIG['location'].unique()
     sensor_locations_from_file.sort()
     LOG.debug("Sensor location from file: %s", sensor_locations_from_file)
     assert np.all(sensor_locations_from_db == sensor_locations_from_file)
 
 
-def test_json_processing():
+def test_process_fetched_data_returns_df():
     """
     check that sample json can be processed and transformed into a dataframe
     """
     recent_data = SAMPLE_JSON
     data_df = process_fetched_data(recent_data, session=SESSION())
     assert isinstance(data_df, pd.DataFrame)
+
+
+def test_processed_data_contains_datetime_col():
+    """
+    check that sample json can be processed and transformed into a dataframe
+    """
+    recent_data = SAMPLE_JSON
+    data_df = process_fetched_data(recent_data, session=SESSION())
     assert 'datetime' in data_df.columns
 
 
-def test_no_results():
+def test_no_results_from_future_timestamp():
     """
     Check that the program correctly handles queries that produce no results
     """
@@ -93,7 +132,15 @@ def test_no_results():
     query = session.query(Measurement)\
                    .filter(getattr(Measurement, "datetime") >= unlikely_date)
     assert not one_or_more_results(query)
-    logs = get_measurements_since(unlikely_date, session=SESSION(),
+
+
+def test_get_measurements_since_with_future_timestamp():
+    """
+    Check that the program correctly handles queries that produce no results
+    """
+    unlikely_date = datetime(2099, 1, 1, 0, 0)
+    session = SESSION()
+    logs = get_measurements_since(unlikely_date, session=session,
                                   table=Measurement,
                                   datetime_col="datetime")
     assert logs is None
@@ -115,14 +162,33 @@ def test_save_recent_data():
     assert save_recent_data(data_df, table_name="measurements", engine=ENGINE)
 
 
-def test_some_results_1_day():
+def test_get_last_n_days_returns_df():
     """
     Check that the program correctly handles queries that do produce results
     """
     logs = get_last_n_days(1, session=SESSION(),
                            table=Measurement, datetime_col="datetime")
     assert isinstance(logs, pd.DataFrame)
+
+
+def test_some_results_1_day():
+    """
+    Check that the program correctly handles queries that do produce results
+    """
+    logs = get_last_n_days(1, session=SESSION(),
+                           table=Measurement, datetime_col="datetime")
     assert logs.size
+
+
+def test_get_measurements_since_returns_df():
+    """
+    Check that the program correctly handles queries that do produce results
+    """
+    valid_datetime = TEST_TIME - timedelta(1)
+    logs = get_measurements_since(valid_datetime, session=SESSION(),
+                                  table=Measurement,
+                                  datetime_col="datetime")
+    assert isinstance(logs, pd.DataFrame)
 
 
 def test_some_results():
@@ -133,7 +199,6 @@ def test_some_results():
     logs = get_measurements_since(valid_datetime, session=SESSION(),
                                   table=Measurement,
                                   datetime_col="datetime")
-    assert isinstance(logs, pd.DataFrame)
     assert logs.size
 
 
@@ -144,19 +209,3 @@ def test_get_last_time():
     piid = PI_INFO.loc[0, 'id']
     last_time = get_last_time(piid, session=SESSION())
     assert isinstance(last_time, datetime)
-
-
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
-
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
-
-
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string

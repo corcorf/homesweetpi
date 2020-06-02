@@ -5,14 +5,11 @@ Tests for homesweetpi's data_retrieval module.
 """
 
 import os
-import pytest
 import logging
-from datetime import datetime, timedelta
-import numpy as np
-import pandas as pd
+from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from homesweetpi.retrieve_data import process_fetched_data, fetch_recent_data
+from homesweetpi.retrieve_data import fetch_recent_data
 
 LOG = logging.getLogger("homesweetpi.test_sql_tables")
 TEST_DB_PATH = os.getcwd()
@@ -32,5 +29,6 @@ def test_connection_handling():
     """
     piid = '0000abcd'
     qtime = datetime.now().time()
-    fetch_recent_data(pi_id=piid, query_time=qtime, session=SESSION(),
-                      port=9999)
+    data = fetch_recent_data(pi_id=piid, query_time=qtime, session=SESSION(),
+                             port=9999)
+    assert data is None
