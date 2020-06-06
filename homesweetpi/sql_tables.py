@@ -29,7 +29,7 @@ USERNAME = 'homesweetpi'
 PASSWORD = os.getenv('HSP_PASSWORD')
 DB = 'homesweetpi'
 BASE = declarative_base()
-CONN_STRING = f'postgres://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}'
+CONN_STRING = f'postgresql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}'
 ENGINE = create_engine(CONN_STRING, echo=False)
 SESSION = sessionmaker(bind=ENGINE)
 
