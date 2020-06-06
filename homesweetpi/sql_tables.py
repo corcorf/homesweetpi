@@ -387,7 +387,12 @@ def get_last_measurement_for_sensor(sensorid, session=SESSION()):
         LOG.debug("Last reading found for sensor %s: %s", sensorid, result)
         return result
     except NoResultFound:
-        LOG.debug("No readings found for sensor %s", sensorid)
+        LOG.debug("No readings found for sensor (NoResultFound): %s",
+                  sensorid)
+        return None
+    except AttributeError:
+        LOG.debug("No readings found for sensor (AttributeError): %s",
+                  sensorid)
         return None
 
 
