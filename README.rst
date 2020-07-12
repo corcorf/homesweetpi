@@ -13,7 +13,7 @@ The other part of the project can be found in my pi_logger_ repository.
 
 See it working live here_!
 
-.. _here: http://homesweetpi.duckdns.org:5002/air_charts
+.. _here: https://homesweetpi.flann.xyz/air_charts
 
 An overview of the project architecture is shown in the figure below:
 
