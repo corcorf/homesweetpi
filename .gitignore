@@ -111,3 +111,4 @@ api_service_set_up_complete
 data_retrieval_service_set_up_complete
 
 *.json
+*.db
